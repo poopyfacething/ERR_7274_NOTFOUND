@@ -988,207 +988,126 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.pbkdf2.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const inputText = document.getElementById('input-text');
-            const outputText = document.getElementById('output-text');
-            const encryptBtn = document.getElementById('encrypt-btn');
-            const decryptBtn = document.getElementById('decrypt-btn');
-            const encryptionKey = document.getElementById('encryption-key');
-            const showInstructionsBtn = document.getElementById('show-instructions');
-            const dismissInstructionsBtn = document.getElementById('dismiss-instructions');
-            const instructionsPanel = document.getElementById('instructions-panel');
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // DOM elements
+        const inputText = document.getElementById('input-text');
+        const outputText = document.getElementById('output-text');
+        const encryptBtn = document.getElementById('encrypt-btn');
+        const decryptBtn = document.getElementById('decrypt-btn');
+        const encryptionKey = document.getElementById('encryption-key');
+        const instructionsPanel = document.getElementById('instructions-panel');
 
-            // Visual effects functions (unchanged)
-            function applyGlitchAnimation(element) {
-                element.classList.add('glitching');
-                setTimeout(() => {
-                    element.classList.remove('glitching');
-                }, 300);
+        // Encryption functions
+        async function encrypt(text, password) {
+            if (!text) return '';
+            try {
+                const salt = CryptoJS.lib.WordArray.random(128/8);
+                const key = CryptoJS.PBKDF2(password, salt, {keySize: 256/32, iterations: 100000});
+                const iv = CryptoJS.lib.WordArray.random(128/8);
+                const encrypted = CryptoJS.AES.encrypt(text, key, {iv, padding: CryptoJS.pad.Pkcs7, mode: CryptoJS.mode.CBC});
+                const combined = salt.toString() + iv.toString() + encrypted.toString();
+                return CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(combined))
+                    .replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+            } catch (e) {
+                return `[ERR:ENCRYPTION_FAILED]`;
             }
+        }
 
-            function createGlitchText(text) {
-                const span = document.createElement('span');
-                span.className = 'glitch-text';
-                span.setAttribute('data-text', text);
-                span.textContent = text;
-                return span;
-            }
+        // Decryption functions with improved error messages
+        async function decrypt(encryptedText, password) {
+            if (!encryptedText) return '';
+            if (encryptedText.startsWith('[ERR:ENCRYPTION_FAILED]')) return encryptedText;
 
-            async function animateTyping(element, text, delay = 20) {
-                element.value = '';
-                let displayText = '';
+            try {
+                const base64 = encryptedText.replace(/-/g, '+').replace(/_/g, '/');
+                const padding = base64.length % 4;
+                const paddedBase64 = padding ? base64 + '='.repeat(4 - padding) : base64;
+                const parsedWordArray = CryptoJS.enc.Base64.parse(paddedBase64);
+                const decodedText = parsedWordArray.toString(CryptoJS.enc.Utf8);
 
-                return new Promise(resolve => {
-                    let index = 0;
-                    const chars = text.split('');
+                if (decodedText.length < 64) return `[FORMAT_ERROR]`;
 
-                    function typeNextChar() {
-                        if (index < chars.length) {
-                            displayText += chars[index];
-                            element.value = displayText;
-                            index++;
-                            setTimeout(typeNextChar, delay);
-                        } else {
-                            setTimeout(resolve, 100);
-                        }
-                    }
-
-                    typeNextChar();
-                });
-            }
-
-            // Enhanced encryption functions
-            async function deriveKey(password, salt) {
-                const keySize = 256 / 32;
-                const iterations = 100000;
-                const key = CryptoJS.PBKDF2(password, salt, {
-                    keySize: keySize,
-                    iterations: iterations
-                });
-                return key;
-            }
-
-            // Enhanced encryption function with consistent output formatting
-            async function encrypt(text, password) {
-                if (!text) return '';
+                const salt = CryptoJS.enc.Hex.parse(decodedText.substring(0, 32));
+                const iv = CryptoJS.enc.Hex.parse(decodedText.substring(32, 64));
+                const ciphertext = decodedText.substring(64);
+                const key = CryptoJS.PBKDF2(password, salt, {keySize: 256/32, iterations: 100000});
 
                 try {
-                    // Generate random salt (16 bytes)
-                    const salt = CryptoJS.lib.WordArray.random(128 / 8);
-
-                    // Derive secure key using PBKDF2
-                    const key = CryptoJS.PBKDF2(password, salt, {
-                        keySize: 256 / 32,
-                        iterations: 100000
-                    });
-
-                    // Generate random IV (16 bytes)
-                    const iv = CryptoJS.lib.WordArray.random(128 / 8);
-
-                    // Encrypt with AES-256-CBC
-                    const encrypted = CryptoJS.AES.encrypt(text, key, {
-                        iv: iv,
-                        padding: CryptoJS.pad.Pkcs7,
-                        mode: CryptoJS.mode.CBC
-                    });
-
-                    // Combine salt (hex) + iv (hex) + ciphertext (base64)
-                    const combined = salt.toString() + iv.toString() + encrypted.toString();
-
-                    // Convert to URL-safe Base64
-                    const wordArray = CryptoJS.enc.Utf8.parse(combined);
-                    return CryptoJS.enc.Base64.stringify(wordArray)
-                        .replace(/=/g, '')
-                        .replace(/\+/g, '-')
-                        .replace(/\//g, '_');
+                    const decrypted = CryptoJS.AES.decrypt(ciphertext, key, {iv, padding: CryptoJS.pad.Pkcs7, mode: CryptoJS.mode.CBC});
+                    const result = decrypted.toString(CryptoJS.enc.Utf8);
+                    return result || 'Wrong key! Try a different one.';
                 } catch (e) {
-                    console.error('Encryption error:', e);
-                    // Return a clearly identifiable error format
-                    return `[ERR:ENCRYPTION_FAILED:${e.message.slice(0, 30)}]`;
+                    return 'Wrong key! Try a different one.';
                 }
+            } catch (e) {
+                return `[SYSTEM_ERROR]`;
             }
+        }
 
-            // Enhanced decryption function that always returns output
-            async function decrypt(encryptedText, password) {
-                if (!encryptedText) return '';
+        // UI Effects
+        function applyGlitchAnimation(element) {
+            element.classList.add('glitching');
+            setTimeout(() => element.classList.remove('glitching'), 300);
+        }
 
-                // Handle explicit error messages from encryption
-                if (encryptedText.startsWith('[ERR:ENCRYPTION_FAILED:')) {
-                    return encryptedText;
-                }
-
-                try {
-                    // Convert from URL-safe base64 to standard base64
-                    const base64 = encryptedText.replace(/-/g, '+').replace(/_/g, '/');
-                    const padding = base64.length % 4;
-                    const paddedBase64 = padding ?
-                        base64 + '='.repeat(4 - padding) :
-                        base64;
-
-                    // Convert back to string
-                    const parsedWordArray = CryptoJS.enc.Base64.parse(paddedBase64);
-                    const decodedText = parsedWordArray.toString(CryptoJS.enc.Utf8);
-
-                    // Early return for obviously malformed data
-                    if (decodedText.length < 64) {
-                        return `[FORMAT_ERROR:${decodedText.length < 32 ? 'INCOMPLETE_HEADER' : 'MISSING_IV'}]`;
-                    }
-
-                    // Extract salt (first 32 hex chars)
-                    const salt = CryptoJS.enc.Hex.parse(decodedText.substring(0, 32));
-
-                    // Extract IV (next 32 hex chars)
-                    const iv = CryptoJS.enc.Hex.parse(decodedText.substring(32, 64));
-
-                    // Extract ciphertext (rest)
-                    const ciphertext = decodedText.substring(64);
-
-                    // Derive key
-                    const key = CryptoJS.PBKDF2(password, salt, {
-                        keySize: 256 / 32,
-                        iterations: 100000
-                    });
-
-                    // Decrypt - this will never throw
-                    const decrypted = CryptoJS.AES.decrypt(ciphertext, key, {
-                        iv: iv,
-                        padding: CryptoJS.pad.Pkcs7,
-                        mode: CryptoJS.mode.CBC
-                    });
-
-                    // Convert to string with fallback for wrong passwords
-                    let result;
-                    try {
-                        result = decrypted.toString(CryptoJS.enc.Utf8);
-                        if (!result) {
-                            throw new Error('Empty result (likely wrong password)');
-                        }
-                    } catch (e) {
-                        // Create "garbled" output that maintains the original length
-                        const garbledLength = ciphertext.length > 3 ?
-                            Math.floor(ciphertext.length * 0.7) : 10;
-                        result = 
-                            '[DECRYPTION_ERROR:WRONG_KEY?]';
-                    }
-
-                    return result;
-                } catch (e) {
-                    console.error('Decryption processing error:', e);
-                    // Return structured error that won't break the UI
-                    return `[ERR:DECRYPTION_PROCESSING:${e.message.slice(0, 30)}]`;
-                }
+        async function animateTyping(element, text, delay = 20) {
+            element.value = '';
+            for (let char of text) {
+                element.value += char;
+                await new Promise(r => setTimeout(r, delay));
             }
+        }
 
-            // Rest of your original visual effects code (unchanged)
-            function glitchInputOnType() {
-                const span = document.createElement('span');
-                span.textContent = inputText.value.charAt(inputText.value.length - 1);
-                span.style.position = 'absolute';
-                span.style.color = 'var(--primary-color)';
-                span.style.opacity = '0.7';
-                span.style.fontSize = '1.3rem';
-                span.style.pointerEvents = 'none';
+        // Event Handlers
+        encryptBtn.addEventListener('click', async () => {
+            if (!inputText.value) return;
+            encryptBtn.disabled = true;
+            applyGlitchAnimation(encryptBtn.querySelector('.button-text'));
+            const encrypted = await encrypt(inputText.value, encryptionKey.value || 'poopy');
+            await animateTyping(outputText, encrypted, 5);
+            encryptBtn.disabled = false;
+        });
 
-                const rect = inputText.getBoundingClientRect();
-                const charWidth = 10;
-                const approxPos = (inputText.value.length - 1) % (rect.width / charWidth);
+        decryptBtn.addEventListener('click', async () => {
+            if (!inputText.value) return;
+            decryptBtn.disabled = true;
+            applyGlitchAnimation(decryptBtn.querySelector('.button-text'));
+            const decrypted = await decrypt(inputText.value, encryptionKey.value || 'poopy');
+            await animateTyping(outputText, decrypted, 5);
+            decryptBtn.disabled = false;
+        });
 
-                span.style.left = `${approxPos * charWidth}px`;
-                span.style.top = '0';
+        // Instructions Panel
+        document.getElementById('show-instructions').addEventListener('click', () => 
+            instructionsPanel.classList.add('active'));
+        document.getElementById('dismiss-instructions').addEventListener('click', () => 
+            instructionsPanel.classList.remove('active'));
 
-                document.body.appendChild(span);
-                applyGlitchAnimation(span);
-
-                setTimeout(() => {
-                    document.body.removeChild(span);
-                }, 300);
+        // Visual Effects
+        document.addEventListener('mousemove', e => {
+            const cursor = document.querySelector('.custom-cursor');
+            cursor.style.left = `${e.clientX}px`;
+            cursor.style.top = `${e.clientY}px`;
+            
+            if (Math.random() > 0.98) {
+                const glitch = document.createElement('div');
+                glitch.style.cssText = `left:${e.clientX}px;top:${e.clientY}px;
+                    background:var(--${Math.random() > 0.5 ? 'primary' : 'secondary'}-color);`;
+                document.body.appendChild(glitch);
+                setTimeout(() => glitch.remove(), 100);
             }
+        });
 
-            // Updated button handlers with async/await
-            encryptBtn.addEventListener('click', async function () {
-                const text = inputText.value;
-                const key = encryptionKey.value || 'poopy';
+        setInterval(() => {
+            const elements = document.querySelectorAll('.glitch-effect');
+            elements[Math.floor(Math.random() * elements.length)]?.classList.add('glitching');
+            setTimeout(() => elements.forEach(el => el.classList.remove('glitching')), 300);
+        }, 5000);
+
+        // Initialize default key
+        if (!encryptionKey.value) encryptionKey.value = 'poopy';
+    });
 
                 if (!text) {
                     outputText.value = '';
