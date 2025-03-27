@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrononix</title>
+    <link rel="icon" href="home_icon/icon.ico" type="home_icon/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Fade-in animation */
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* Apply fade-in on page load */
+        body {
+            animation: fadeIn 0.5s ease-in-out;
+            background: linear-gradient(135deg, #2B3A42, #3C4A58); /* Darker gradient */
+            color: #E0E0E0; /* Light text on dark background */
+        }
+
+        /* Overlay style */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent dark background */
+    opacity: 0; /* Initially invisible */
+    pointer-events: none; /* Prevent interaction with the overlay */
+    z-index: 999; /* Placed below the search bar */
+    transition: opacity 0.5s ease; /* Smooth fade-in and fade-out */
+}
+
+/* Search bar style */
+.search-bar {
+    position: fixed;
+    top: -100px; /* Initially hidden above the screen */
+    left: 0;
+    width: 100%;
+    padding: 20px;
+    text-align: center;
+    z-index: 1000;
+    transition: top 0.5s ease; /* Smooth transition for movement */
+}
+
+/* Input field inside the search bar */
+.search-bar input {
+    padding: 12px 20px;
+    width: 500px;
+    font-size: 18px;
+    border-radius: 30px;
+    border: 1px none #ccc;
+    background: linear-gradient(135deg, #9b59b6, #6a1b9a);
+    color: white;
+    outline: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+/* Placeholder text style */
+.search-bar input::placeholder {
+    color: white;
+}
+
+/* Focused input field style */
+.search-bar input:focus {
+    border: 1px solid #8e44ad;
+    box-shadow: 0 4px 12px rgba(142, 68, 173, 0.3);
+}
+
+/* History items style */
+#history {
+    margin-top: 20px;  /* Spacing between search bar and history */
+    max-width: 400px;  /* Smaller width */
+    margin-left: auto;
+    margin-right: auto;
+    display: none; /* Initially hide the history */
+    opacity: 0; /* Initially invisible */
+    transition: opacity 0.6s ease-out; /* Smooth fade-in/fade-out transition */
+}
+
+/* Individual search history item */
+.history-item {
+    margin-top: 8px;
+    padding: 10px 18px; /* Reduced padding for a more compact look */
+    border: 1px solid transparent;
+    background: linear-gradient(145deg, #9b59b6, #6a1b9a);
+    color: white;
+    border-radius: 30px; /* Slightly smaller border radius */
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.4s ease, transform 0.3s ease, box-shadow 0.4s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Delete button for each history item */
+.delete-btn {
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-size: 16px; /* Smaller font size */
+    font-weight: bold;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.delete-btn:hover {
+    background-color: #e74c3c;
+    transform: scale(1.1); /* Slight zoom effect */
+}
+
+/* Hover effect on history item */
+.history-item:hover {
+    background-color: #8e44ad;
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); /* Reduced shadow for a more compact feel */
+}
+
+/* Active item click effect */
+.history-item:active {
+    background-color: #6a1b9a;
+    transform: scale(0.98); /* Slight shrink effect */
+}
+
+/* Smooth fade-in for history list */
+#history.show {
+    opacity: 1;
+}
+
+/* Add a subtle pulse animation for the delete button */
+.delete-btn:active {
+    transform: scale(0.95);
+}
+
+
+/* Responsive history container */
+@media screen and (max-width: 600px) {
+    .search-bar input {
+        width: 80%;
+    }
+
+    .history-item {
+        width: 80%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+        .hidden { display: none; } 
+
+        /* Sidebar styles (Left Sidebar) */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background: linear-gradient(135deg, #3B4A56, #47565E); /* Darker gradient for sidebar */
+            color: #E0E0E0; /* Light text */
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 20px;
+            transition: left 0.3s ease-in-out;
+            overflow-y: auto;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+            /* Hide scrollbar for sidebar */
+            .sidebar::-webkit-scrollbar {
+                display: none;
+            }
+
+            .sidebar.show {
+                left: 0;
+            }
+
+        .sidebar-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-bottom: 20px;
+        }
+
+        /* Sidebar links styling */
+        .sidebar a {
+            text-decoration: none;
+            color: #E0E0E0;
+            font-size: 1.25rem;
+            padding: 12px 20px;
+            margin-bottom: 15px;
+            width: 100%;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.2); /* Slightly lighter background for buttons */
+            border-radius: 8px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+            .sidebar a:hover {
+                background-color: rgba(255, 255, 255, 0.3); /* Hover with a slightly brighter effect */
+                transform: scale(1.05);
+            }
+
+        /* Main content styles */
+        .main-content {
+            padding: 40px;
+            flex-grow: 1;
+            text-align: center;
+            transition: margin-left 0.5s ease;
+            margin-left: 0;
+            background: linear-gradient(to right, #3C4A58, #2B3A42); /* Darker gradient for the main content */
+            color: #E0E0E0; /* Light text */
+        }
+
+            .main-content.with-sidebar {
+                margin-left: 250px;
+            }
+
+        /* Right-side buttons styles */
+        .right-buttons {
+            position: fixed;
+            top: 20px;
+            right: -300px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: right 0.3s ease, opacity 0.5s ease;
+            opacity: 0;
+            pointer-events: none;
+            height: calc(100vh - 40px);
+            padding-right: 20px;
+            background: linear-gradient(135deg, #3B4A56, #47565E); /* Darker gradient */
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            overflow-y: scroll;
+        }
+
+            /* Hide scrollbar for right-side buttons */
+            .right-buttons::-webkit-scrollbar {
+                display: none;
+            }
+
+            .right-buttons.show {
+                right: 20px;
+                opacity: 1;
+                pointer-events: all;
+            }
+
+            .right-buttons a {
+                background-color: rgba(255, 255, 255, 0.2);
+                padding: 12px 25px;
+                border-radius: 10px;
+                color: #E0E0E0;
+                font-size: 1.2rem;
+                text-decoration: none;
+                text-align: center;
+                width: 200px;
+                transition: background-color 0.3s ease, transform 0.3s ease;
+            }
+
+                .right-buttons a:hover {
+                    background-color: rgba(255, 255, 255, 0.3);
+                    transform: scale(1.05);
+                }
+
+        /* Show Bar Button */
+        .show-bar-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: #3B4A56; /* Dark button for show bar */
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1.25rem;
+            color: #E0E0E0;
+            text-decoration: none;
+            transition: opacity 0.5s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+        }
+
+            .show-bar-btn.hidden {
+                opacity: 0;
+            }
+
+            .show-bar-btn:hover {
+                background-color: #4A5A63; /* Darker hover effect */
+            }
+
+            
+    </style>
+</head>
+<body>
+    <div id="indexBody">
+        <div class="overlay"></div>
+
+<div class="search-bar">
+    <form id="searchForm" onsubmit="return false;">
+        <input type="text" name="q" placeholder="Search" required onkeydown="submitOnce(event)">
+    </form>
+    <div id="history"></div> <!-- Display search history here -->
+</div>
+
+
+    <!-- Sidebar (Left Sidebar) -->
+    <div id="sidebar" class="sidebar">
+        <div class="flex items-center justify-between">
+            <h2 class="text-2xl font-bold text-white">Menu</h2>
+        </div>
+
+        <div class="sidebar-content">
+            <a href="Cool_Things/HTML_Extractor/Extractor.html" class="nav-link">Code Extractor</a>
+            <a href="Cool_Things/cryptoGraph/CryptoGraph.html" class="nav-link">CryptoGraph</a>
+            <a href="page3.html" class="nav-link">Page 3</a>
+            <a href="page4.html" class="nav-link">Page 4</a>
+            <a href="page5.html" class="nav-link">Page 69</a>
+            <a href="page6.html" class="nav-link">Page 6</a>
+            <a href="page7.html" class="nav-link">Page 7</a>
+            <a href="page8.html" class="nav-link">Page 8</a>
+            <a href="page9.html" class="nav-link">Page 9</a>
+            <a href="page10.html" class="nav-link">Page 10</a>
+            <a href="#" class="hide-bar-btn" id="sidebar-hide-bar-btn" onclick="hideSidebar()">Hide Bar</a>
+        </div>
+    </div>
+
+    <!-- Right-side buttons (Right Sidebar) -->
+    <div class="right-buttons" id="right-buttons">
+        <a class="nav-link" target="_blank" style="font-weight: bold; font-size: 30px;">Websites</a>
+        <a href="https://www.google.com" class="nav-link" target="_blank">Google</a>
+        <a href="https://www.coolmathgames.com" class="nav-link" target="_blank">Coolmath Games</a>
+        <a href="https://www.youtube.com" class="nav-link" target="_blank">YouTube</a>
+        <a href="https://www.crazygames.com" class="nav-link" target="_blank">Crazy Games</a>
+        <a href="https://finance.yahoo.com" class="nav-link" target="_blank">Yahoo Finance</a>
+        <a href="https://www.github.com" class="nav-link" target="_blank">GitHub</a>
+        <a href="https://lms.fcps.edu/home" class="nav-link" target="_blank">Schoology</a>
+        <a href="https://mail.google.com/mail/u/0/?pli=1#inbox" class="nav-link" target="_blank">Gmail</a>
+        <a href="https://www.virustotal.com/gui/home/upload" class="nav-link" target="_blank">VirusTotal</a>
+        <a href="https://temp-mail.org/en/" class="nav-link" target="_blank">Temp Mail</a>
+        <a href="https://www.cantmakeit.life/" class="nav-link" target="_blank">Can't Make It</a>
+        <a href="https://app.cryptotab.farm/dashboard" class="nav-link" target="_blank">CryptoTab</a>
+    </div>
+
+    <!-- Main content -->
+    <div class="main-content h-screen flex flex-col justify-center items-center">
+        <h1 class="text-6xl font-bold text-white mb-8" id="page-title">Page 68 - Poopy</h1>
+        <p class="text-2xl text-white mb-12" id="explore-text">Explore other pages</p>
+        <div class="nav-links mt-8 flex space-x-4">
+        </div>
+    </div>
+
+    <!-- Show Bar Button at the bottom left -->
+    <a href="#" class="show-bar-btn" id="show-bar-btn" onclick="showSidebar()">Show Bar</a>
+  </div>
+    <script>
+      function updateVisibility() {
+      const indexStatus = localStorage.getItem('indexContentStatus');
+      const indexBody = document.getElementById('indexBody');
+      if (indexStatus === 'off') {
+        indexBody.classList.add('hidden');
+      } else {
+        indexBody.classList.remove('hidden');
+      }
+    }
+
+    window.onload = updateVisibility;
+
+      let lastPressTime = 0; // Variable to track the time of the last press
+      let pressTimeout;
+
+      function showSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.add('show');
+        const mainContent = document.querySelector('.main-content');
+        mainContent.classList.add('with-sidebar');
+  
+        const rightButtons = document.getElementById('right-buttons');
+        rightButtons.classList.add('show');
+        rightButtons.classList.remove('hide');
+  
+        toggleShowBarButton();
+      }
+  
+      function hideSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.remove('show');
+        const mainContent = document.querySelector('.main-content');
+        mainContent.classList.remove('with-sidebar');
+  
+        const rightButtons = document.getElementById('right-buttons');
+        rightButtons.classList.remove('show');
+        rightButtons.classList.add('hide');
+  
+        toggleShowBarButton();
+      }
+  
+      function toggleShowBarButton() {
+        const showBarButton = document.getElementById('show-bar-btn');
+        const rightButtons = document.getElementById('right-buttons');
+        if (rightButtons.classList.contains('show')) {
+          showBarButton.classList.add('hidden');
+        } else {
+          showBarButton.classList.remove('hidden');
+        }
+      }
+  
+      // Event listener for the "x" key
+      document.addEventListener('keydown', function(event) {
+        if (event.altKey && event.key.toLowerCase() === 'x' || event.altKey && event.key.toUpperCase() === 'X' ) {
+          const currentTime = Date.now();
+  
+          // Check if the time between presses is short enough to count as a double press
+          if (currentTime - lastPressTime < 300) {
+            // If pressed twice quickly, go back to the previous page
+            window.history.back();
+          } else {
+            // If not, navigate to time_passes.html
+            window.location.href = 'Cool_Things/time/time_passes.html';
+          }
+  
+          // Update the last press time
+          lastPressTime = currentTime;
+        }
+      });
+  
+      // Event listener for the "z" key
+      document.addEventListener('keydown', function(event) {
+        if (event.altKey && event.key.toLowerCase() === 'z' || event.altKey && event.key.toUpperCase() === 'Z' ) {
+          const currentTime = Date.now();
+  
+          // Check if the time between presses is short enough to count as a double press
+          if (currentTime - lastPressTime < 300) {
+            // If pressed twice quickly, go back to the previous page
+            window.history.back();
+          } else {
+            // If not, navigate to time_passes.html
+            window.location.href = 'Cool_Things/HTML_Extractor/Extractor.html';
+          }
+  
+          // Update the last press time
+          lastPressTime = currentTime;
+        }
+      });
+  
+      document.addEventListener('keydown', function(event) {
+    if (event.altKey && (event.key.toLowerCase() === 'c' || event.key.toUpperCase() === 'C')) {
+      const currentTime = Date.now();
+      if (currentTime - lastPressTime < 300) {
+        window.history.back(); // Go back in browser history
+      } else {
+        window.location.href = 'Cool_Things/CryptoGraph/CryptoGraph.html'; // Navigate to the specified page
+      }
+      lastPressTime = currentTime; // Update the last press time
+    }
+  });
+      document.addEventListener('keydown', function(event) {
+        if (event.altKey && event.key.toLowerCase() === 'v' || event.altKey && event.key.toUpperCase() === 'V' ) {
+          const currentTime = Date.now();
+  
+          // Check if the time between presses is short enough to count as a double press
+          if (currentTime - lastPressTime < 300) {
+            // If pressed twice quickly, go back to the previous page
+            window.history.back();
+          } else {
+            // If not, navigate to time_passes.html
+            window.location.href = 'Cool_Things/Database/Database.html';
+          }
+  
+          // Update the last press time
+          lastPressTime = currentTime;
+        }
+      });
+  
+  document.addEventListener('keydown', function(event) {
+    if (event.altKey && event.ctrlKey && event.key.toLowerCase() === 'm' || event.altKey && event.key.toUpperCase() === 'M' ) {
+      const currentTime = Date.now();
+  
+          if (currentTime - lastPressTime < 300) {
+              window.history.back();
+          } else {
+              // Open a new tab
+              const newTab = window.open('FiveDollars/index.html', '_blank');
+  
+              if (newTab) {
+                  // Make the new tab go fullscreen
+                  newTab.onload = function() {
+                      newTab.document.documentElement.requestFullscreen();
+                  };
+              }
+          }
+  
+          lastPressTime = currentTime;
+      }
+  });
+
+  document.addEventListener('keydown', function(event) {
+    if (event.altKey && event.ctrlKey && event.key.toLowerCase() === '0') {
+      const currentTime = Date.now();
+  
+          if (currentTime - lastPressTime < 300) {
+              window.history.back();
+          } else {
+              // Open a new tab
+              const newTab = window.open('Cool_Things/SIGnOUT/index.html', '_blank');
+  
+              if (newTab) {
+                  // Make the new tab go fullscreen
+                  newTab.onload = function() {
+                      newTab.document.documentElement.requestFullscreen();
+                  };
+              }
+          }
+  
+          lastPressTime = currentTime;
+      }
+  });
+
+  document.addEventListener('keydown', function(event) {
+    if (event.altKey && event.ctrlKey && event.key.toLowerCase() === 'i') {
+      const currentTime = Date.now();
+  
+          if (currentTime - lastPressTime < 300) {
+              window.history.back();
+          } else {
+              // Open a new tab
+              window.location.href = 'Cool_Things/Control/main-control.html';  
+              if (newTab) {
+                  // Make the new tab go fullscreen
+                  newTab.onload = function() {
+                      newTab.document.documentElement.requestFullscreen();
+                  };
+              }
+          }
+  
+          lastPressTime = currentTime;
+      }
+  });
+
+  // Flag to prevent form submission
+  let isFormSubmitted = false;
+
+// Function to allow hitting Enter multiple times without blocking submission
+function submitOnce(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();  // Prevent the default form submission behavior
+        
+        const searchQuery = event.target.value;
+        if (searchQuery.trim() !== "") {
+            saveSearchHistory(searchQuery);  // Save the search history
+            searchOnGoogle(searchQuery);    // Perform Google search
+        }
+    }
+}
+
+// Function to save the search history in localStorage and update the display
+function saveSearchHistory(searchQuery) {
+    let history = JSON.parse(localStorage.getItem('searchHistory')) || [];
+    if (!history.includes(searchQuery)) {
+        history.push(searchQuery);  // Add the new search term to the history array
+        if (history.length > 5) {  // Keep only the last 5 searches
+            history.shift();
+        }
+        localStorage.setItem('searchHistory', JSON.stringify(history));  // Save to localStorage
+        displaySearchHistory(history);  // Update the displayed history
+    }
+}
+
+// Function to display search history below the search bar
+function displaySearchHistory(history) {
+    const historyContainer = document.getElementById('history');
+    historyContainer.innerHTML = "";  // Clear previous history
+
+    history.forEach(function(query, index) {
+        const historyItem = document.createElement('div');
+        historyItem.classList.add('history-item');
+
+        const historyText = document.createElement('span');
+        historyText.textContent = query;
+        historyItem.appendChild(historyText);
+
+        // Create a delete button ('X') for each history item
+        const deleteButton = document.createElement('span');
+        deleteButton.textContent = 'X';
+        deleteButton.classList.add('delete-btn');
+        deleteButton.onclick = function(event) {
+            event.stopPropagation();  // Prevent triggering search when X is clicked
+            deleteHistoryItem(index);  // Delete the clicked history item
+        };
+
+        historyItem.appendChild(deleteButton);
+        historyContainer.appendChild(historyItem);
+
+        // Add click event to search for the clicked history item
+        historyItem.onclick = function() {
+            searchOnGoogle(query);
+        };
+    });
+}
+
+// Function to delete a history item
+function deleteHistoryItem(index) {
+    let history = JSON.parse(localStorage.getItem('searchHistory')) || [];
+    history.splice(index, 1);  // Remove the item at the specified index
+    localStorage.setItem('searchHistory', JSON.stringify(history));  // Save the updated history
+    displaySearchHistory(history);  // Update the displayed history
+}
+
+// Function to perform Google search
+function searchOnGoogle(query) {
+    const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    window.open(googleSearchUrl, '_blank');
+}
+
+// Load and display history from localStorage on page load
+window.onload = function() {
+    const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
+    displaySearchHistory(history);
+};
+
+// Add event listener for keydown event to handle Ctrl + I
+document.addEventListener('keydown', function(event) {
+    if (event.ctrlKey && event.key.toLowerCase() === 'y') {
+        const searchBar = document.querySelector('.search-bar');
+        const overlay = document.querySelector('.overlay');
+        const searchInput = document.querySelector('.search-bar input');
+        const historyContainer = document.getElementById('history');
+
+        if (searchBar.style.top === '20px') {
+            // Move search bar up, fade out the overlay, and fade out history simultaneously
+            searchBar.style.top = '-100px';
+            overlay.style.opacity = '0';
+            historyContainer.style.opacity = '0'; // Fade out history immediately
+            setTimeout(() => { historyContainer.style.display = 'none'; }, 500); // Hide history after fade-out
+        } else {
+            // Move search bar down, fade in the overlay, and show history
+            searchBar.style.top = '20px';
+            overlay.style.opacity = '1';
+            historyContainer.style.display = 'block'; // Show history
+            setTimeout(() => { historyContainer.style.opacity = '1'; }, 10); // Fade in history immediately
+            searchInput.focus(); // Focus the input automatically
+        }
+    }
+});
+  
+  // Function to check login for various systems
+function checkLogin() {
+    const activeUser = localStorage.getItem('activeUser');
+
+    // Always enforce general login check
+    if (!activeUser) {
+        console.log("No active user found. Redirecting to login...");
+        window.location.href = 'home_login/login.html';
+        return;  // Stop further checks if no active user
+    } else {
+        console.log("User is logged in:", activeUser);
+    }
+
+    // Always enforce Fail Safe 1 Login
+    const failSafe1User = localStorage.getItem('failSafe1_activeUser');
+    if (!failSafe1User) {
+        console.log("Fail Safe 1: No active user found. Redirecting to login...");
+        window.location.href = 'Fail Safe 1/home_login/login.html';
+        return;  // Stop further checks if Fail Safe 1 login is needed
+    } else {
+        console.log("Fail Safe 1: User is logged in:", failSafe1User);
+    }
+
+    // Always enforce Fail Safe 2 Login
+    const failSafe2User = localStorage.getItem('failSafe2_activeUser');
+    if (!failSafe2User) {
+        console.log("Fail Safe 2: No active user found. Redirecting to login...");
+        window.location.href = 'Fail Safe 2/home_login/login.html';
+        return;  // Stop further checks if Fail Safe 2 login is needed
+    } else {
+        console.log("Fail Safe 2: User is logged in:", failSafe2User);
+    }
+
+    // Always enforce Un Fail Safe 3 Login
+    const unFailSafe3User = localStorage.getItem('unFailSafe3_activeUser');
+    if (!unFailSafe3User) {
+        console.log("Un Fail Safe 3: No active user found. Redirecting to login...");
+        window.location.href = 'Un Fail Safe 3/home_login/login.html';
+        return;  // Stop further checks if Un Fail Safe 3 login is needed
+    } else {
+        console.log("Un Fail Safe 3: User is logged in:", unFailSafe3User);
+    }
+}
+
+// Run this function on pages where login is required for all Fail Safe systems
+checkLogin();
+  </script>  
+</body>
+</html>
