@@ -657,53 +657,6 @@ document.addEventListener('keydown', function(event) {
         }
     }
 });
-  
-  // Function to check login for various systems
-function checkLogin() {
-    const activeUser = localStorage.getItem('activeUser');
-
-    // Always enforce general login check
-    if (!activeUser) {
-        console.log("No active user found. Redirecting to login...");
-        window.location.href = 'home_login/login.html';
-        return;  // Stop further checks if no active user
-    } else {
-        console.log("User is logged in:", activeUser);
-    }
-
-    // Always enforce Fail Safe 1 Login
-    const failSafe1User = localStorage.getItem('failSafe1_activeUser');
-    if (!failSafe1User) {
-        console.log("Fail Safe 1: No active user found. Redirecting to login...");
-        window.location.href = 'Fail Safe 1/home_login/login.html';
-        return;  // Stop further checks if Fail Safe 1 login is needed
-    } else {
-        console.log("Fail Safe 1: User is logged in:", failSafe1User);
-    }
-
-    // Always enforce Fail Safe 2 Login
-    const failSafe2User = localStorage.getItem('failSafe2_activeUser');
-    if (!failSafe2User) {
-        console.log("Fail Safe 2: No active user found. Redirecting to login...");
-        window.location.href = 'Fail Safe 2/home_login/login.html';
-        return;  // Stop further checks if Fail Safe 2 login is needed
-    } else {
-        console.log("Fail Safe 2: User is logged in:", failSafe2User);
-    }
-
-    // Always enforce Un Fail Safe 3 Login
-    const unFailSafe3User = localStorage.getItem('unFailSafe3_activeUser');
-    if (!unFailSafe3User) {
-        console.log("Un Fail Safe 3: No active user found. Redirecting to login...");
-        window.location.href = 'Un Fail Safe 3/home_login/login.html';
-        return;  // Stop further checks if Un Fail Safe 3 login is needed
-    } else {
-        console.log("Un Fail Safe 3: User is logged in:", unFailSafe3User);
-    }
-}
-
-// Run this function on pages where login is required for all Fail Safe systems
-checkLogin();
   </script>  
 </body>
 </html>
