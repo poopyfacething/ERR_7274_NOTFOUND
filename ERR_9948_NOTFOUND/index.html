@@ -9,15 +9,80 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&display=swap');
 
-/* Add new color variables and effects */
+/* Fixed and enhanced CSS variables */
 :root {
-    --accent-neon: #0ff;
-    --matrix-green: #00ff9d;
-    --cyber-yellow: #ffd300;
-    --hologram-blue: #00f3ff;
-    --grid-line: rgba(155, 89, 182, 0.08);
-    --cyber-glow: 0 0 20px var(--accent-neon);
-}
+        --primary-color: #9b59b6;
+        --secondary-color: #6a1b9a;
+        --background-dark: #0a0a14;
+        --glass-bg: rgba(35, 25, 45, 0.85);
+        --accent-neon: #0ff;
+        --matrix-green: #00ff9d;
+        --cyber-yellow: #ffd300;
+        --hologram-blue: #00f3ff;
+        --grid-line: rgba(155, 89, 182, 0.08);
+        --cyber-glow: 0 0 20px var(--accent-neon);
+        --font-main: 'Orbitron', sans-serif;
+        --font-mono: 'Share Tech Mono', monospace;
+    }
+
+    /* Add base styles that were missing */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background: var(--background-dark);
+        color: var(--primary-color);
+        font-family: var(--font-main);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Fixed main content styling */
+    .main-content {
+        background: var(--background-dark);
+        color: #E0E0E0;
+        padding: 40px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Fixed text visibility */
+    .sidebar, .right-buttons, .search-bar input {
+        color: #E0E0E0 !important;
+    }
+
+    /* Add missing keyframes and animations */
+    @keyframes scanlines {
+        from { background-position: 0 0; }
+        to { background-position: 0 8px; }
+    }
+
+    /* Add missing overlay elements */
+    .scanlines {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+    }
+
+    .noise {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9998;
+    }
 
 /* Add CRT screen curvature effect */
 body::after {
@@ -254,7 +319,10 @@ body::before {
     </style>
 </head>
 <body>
-    <div id="indexBody">
+    <!-- Add missing overlay elements -->
+    <div class="scanlines"></div>
+    <div class="noise"></div>
+    <div class="matrix-overlay"></div>
         <div class="overlay"></div>
 
 <div class="search-bar">
@@ -315,17 +383,31 @@ body::before {
     <a href="#" class="show-bar-btn" id="show-bar-btn" onclick="showSidebar()">Show Bar</a>
   </div>
     <script>
-      function updateVisibility() {
-      const indexStatus = localStorage.getItem('indexContentStatus');
-      const indexBody = document.getElementById('indexBody');
-      if (indexStatus === 'off') {
-        indexBody.classList.add('hidden');
-      } else {
-        indexBody.classList.remove('hidden');
-      }
-    }
+    // Add initialization for visual effects
+    document.addEventListener('DOMContentLoaded', function() {
+        // Create binary rain effect
+        const binaryRain = document.createElement('div');
+        binaryRain.className = 'binary-rain';
+        for (let i = 0; i < 100; i++) {
+            const span = document.createElement('span');
+            span.textContent = Math.random().toString(2).substr(2, 8);
+            span.style.left = `${Math.random() * 100}%`;
+            span.style.animationDelay = `${Math.random() * 5}s`;
+            binaryRain.appendChild(span);
+        }
+        document.body.appendChild(binaryRain);
 
-    window.onload = updateVisibility;
+        // Initialize scanlines
+        const scanlines = document.querySelector('.scanlines');
+        scanlines.style.background = `repeating-linear-gradient(
+            to bottom,
+            transparent 0%,
+            rgba(0, 255, 255, 0.03) 0.5%,
+            rgba(255, 0, 255, 0.03) 1%,
+            transparent 1.5%
+        )`;
+        scanlines.style.backgroundSize = '100% 8px';
+    });
 
       let lastPressTime = 0; // Variable to track the time of the last press
       let pressTimeout;
