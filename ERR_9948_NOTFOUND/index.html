@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrononix</title>
+    <link rel="icon" href="home_icon/icon.ico" type="home_icon/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&display=swap');
+
+:root {
+    --primary-color: #9b59b6;
+    --secondary-color: #6a1b9a;
+    --background-dark: #0a0a14;
+    --glass-bg: rgba(35, 25, 45, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.15);
+    --neu-shadow-dark: rgba(0, 0, 0, 0.5);
+    --neu-shadow-light: rgba(255, 255, 255, 0.08);
+    --accent-neon: #0ff;
+    --matrix-green: #00ff9d;
+    --cyber-yellow: #ffd300;
+    --hologram-blue: #00f3ff;
+    --grid-line: rgba(155, 89, 182, 0.08);
+    --cyber-glow: 0 0 20px var(--accent-neon);
+    --font-main: 'Orbitron', sans-serif;
+    --font-mono: 'Share Tech Mono', monospace;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    background: var(--background-dark);
+    color: var(--primary-color);
+    font-family: var(--font-main);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* CRT Effects */
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center, 
+        transparent 60%, 
+        rgba(0, 255, 255, 0.05) 80%, 
+        transparent 100%);
+    pointer-events: none;
+    z-index: 10000;
+    mix-blend-mode: screen;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridScroll 20s linear infinite;
+    z-index: -1;
+}
+
+/* Main Components */
+.main-content {
+    background: var(--background-dark);
+    color: #E0E0E0;
+    padding: 40px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    perspective: 1000px;
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 280px;
+    height: 100%;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow: 20px 0 45px var(--neu-shadow-dark), 
+                inset 2px 0 2px var(--neu-shadow-light), 
+                0 0 30px rgba(155, 89, 182, 0.4);
+    border-radius: 0 25px 25px 0;
+    padding-top: 40px;
+    transition: left 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    z-index: 998;
+}
+
+.sidebar.show {
+    left: 0;
+}
+
+/* Right Buttons */
+.right-buttons {
+    position: fixed;
+    top: 20px;
+    right: -320px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow: -20px 0 45px var(--neu-shadow-dark), 
+                inset -2px 0 2px var(--neu-shadow-light), 
+                0 0 30px rgba(155, 89, 182, 0.4);
+    border-radius: 25px 0 0 25px;
+    padding: 30px 20px;
+    transition: right 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    z-index: 998;
+}
+
+.right-buttons.show {
+    right: 0;
+}
+
+/* Search Bar */
+.search-bar {
+    position: fixed;
+    top: -150px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(90%, 800px);
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 20px 45px var(--neu-shadow-dark), 
+                inset 0 2px 2px var(--neu-shadow-light), 
+                0 0 30px rgba(155, 89, 182, 0.4);
+    border-radius: 0 0 25px 25px;
+    padding: 20px;
+    transition: top 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    z-index: 1000;
+}
+
+.search-bar input {
+    padding: 15px 25px;
+    width: 100%;
+    font-size: 1.2rem;
+    background: rgba(35, 25, 45, 0.8);
+    color: #E0E0E0;
+    border: 1px solid rgba(155, 89, 182, 0.3);
+    border-radius: 30px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* History Items */
+.history-item {
+    margin-top: 12px;
+    padding: 12px 20px;
+    background: rgba(35, 25, 45, 0.8);
+    color: #E0E0E0;
+    border-radius: 30px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Visual Effects */
+.scanlines {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0, 255, 255, 0.03) 0.5%,
+        rgba(255, 0, 255, 0.03) 1%,
+        transparent 1.5%
+    );
+    animation: scanlines 0.8s steps(120) infinite;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.noise {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABOSURBVGhDY/j//z8DqampDB8/fmT4//8/A1JgZGQkCkfVg9Xz8eNHBmZmZgZGRkYGJEFqGqoerJ6PHz8yMDMzQz2CJEhNQ9WD1fPx40cGZmZmqEeQBKlpqHqwej5+/MjAzMwM9QiSIDUNVQ9Wz8fPx48fGZiZmaEeQRKkpqHqwer5+PEjAzMzM9QjSILUNFQ9WD0fP35kYGZmhnoESZAAAGd8GSto0fRWAAAAAElFTkSuQmCC');
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 9998;
+}
+
+.matrix-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 255, 153, 0.05) 0px,
+        rgba(0, 255, 153, 0.05) 1px,
+        transparent 1px,
+        transparent 40px
+    );
+    animation: matrixScroll 50s linear infinite;
+    pointer-events: none;
+    z-index: 9997;
+}
+
+/* Animations */
+@keyframes gridScroll {
+    from { background-position: 0 0; }
+    to { background-position: 40px 40px; }
+}
+
+@keyframes neonPulse {
+    0% { box-shadow: var(--cyber-glow), 0 0 0 var(--accent-neon); }
+    50% { box-shadow: var(--cyber-glow), 0 0 15px var(--accent-neon); }
+    100% { box-shadow: var(--cyber-glow), 0 0 0 var(--accent-neon); }
+}
+
+@keyframes matrixFlow {
+    from { transform: translateX(-50%) translateY(0); }
+    to { transform: translateX(-50%) translateY(-200%); }
+}
+
+@keyframes scanlines {
+    from { background-position: 0 0; }
+    to { background-position: 0 8px; }
+}
+
+@keyframes matrixScroll {
+    from { background-position: 0 0; }
+    to { background-position: 0 100%; }
+}
+
+@keyframes fall {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(100vh); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 250px;
+        border-radius: 0 15px 15px 0;
+    }
+    
+    .right-buttons {
+        width: 220px;
+        border-radius: 15px 0 0 15px;
+    }
+    
+    .search-bar input {
+        font-size: 1rem;
+    }
+}
+    </style>
+</head>
+<body>
+    <div id="indexBody">
+        <div class="overlay"></div>
+
+<div class="search-bar">
+    <form id="searchForm" onsubmit="return false;">
+        <input type="text" name="q" placeholder="Search" required onkeydown="submitOnce(event)">
+    </form>
+    <div id="history"></div> <!-- Display search history here -->
+</div>
+
+
+    <!-- Sidebar (Left Sidebar) -->
+    <div id="sidebar" class="sidebar">
+        <div class="flex items-center justify-between">
+            <h2 class="text-2xl font-bold text-white">Menu</h2>
+        </div>
+
+        <div class="sidebar-content">
+            <a href="Cool_Things/HTML_Extractor/Extractor.html" class="nav-link">Code Extractor</a>
+            <a href="Cool_Things/cryptoGraph/CryptoGraph.html" class="nav-link">CryptoGraph</a>
+            <a href="qwe.html" class="nav-link">Page 3</a>
+            <a href="page4.html" class="nav-link">Page 4</a>
+            <a href="page5.html" class="nav-link">Page 69</a>
+            <a href="page6.html" class="nav-link">Page 6</a>
+            <a href="page7.html" class="nav-link">Page 7</a>
+            <a href="page8.html" class="nav-link">Page 8</a>
+            <a href="page9.html" class="nav-link">Page 9</a>
+            <a href="page10.html" class="nav-link">Page 10</a>
+            <a href="#" class="hide-bar-btn" id="sidebar-hide-bar-btn" onclick="hideSidebar()">Hide Bar</a>
+        </div>
+    </div>
+
+    <!-- Right-side buttons (Right Sidebar) -->
+    <div class="right-buttons" id="right-buttons">
+        <a class="nav-link" target="_blank" style="font-weight: bold; font-size: 30px;">Websites</a>
+        <a href="https://www.google.com" class="nav-link" target="_blank">Google</a>
+        <a href="https://www.coolmathgames.com" class="nav-link" target="_blank">Coolmath Games</a>
+        <a href="https://www.youtube.com" class="nav-link" target="_blank">YouTube</a>
+        <a href="https://www.crazygames.com" class="nav-link" target="_blank">Crazy Games</a>
+        <a href="https://finance.yahoo.com" class="nav-link" target="_blank">Yahoo Finance</a>
+        <a href="https://www.github.com" class="nav-link" target="_blank">GitHub</a>
+        <a href="https://lms.fcps.edu/home" class="nav-link" target="_blank">Schoology</a>
+        <a href="https://mail.google.com/mail/u/0/?pli=1#inbox" class="nav-link" target="_blank">Gmail</a>
+        <a href="https://www.virustotal.com/gui/home/upload" class="nav-link" target="_blank">VirusTotal</a>
+        <a href="https://temp-mail.org/en/" class="nav-link" target="_blank">Temp Mail</a>
+        <a href="https://www.cantmakeit.life/" class="nav-link" target="_blank">Can't Make It</a>
+        <a href="https://app.cryptotab.farm/dashboard" class="nav-link" target="_blank">CryptoTab</a>
+    </div>
+
+    <!-- Main content -->
+    <div class="main-content h-screen flex flex-col justify-center items-center">
+        <h1 class="text-6xl font-bold text-white mb-8" id="page-title">Page 68 - Poopy</h1>
+        <p class="text-2xl text-white mb-12" id="explore-text">Explore other pages</p>
+        <div class="nav-links mt-8 flex space-x-4">
+        </div>
+    </div>
+
+    <!-- Show Bar Button at the bottom left -->
+    <a href="#" class="show-bar-btn" id="show-bar-btn" onclick="showSidebar()">Show Bar</a>
+  </div>
+    <script>
+
+    window.onload = updateVisibility;
+
+      let lastPressTime = 0; // Variable to track the time of the last press
+      let pressTimeout;
+
+      function showSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.add('show');
+        const mainContent = document.querySelector('.main-content');
+        mainContent.classList.add('with-sidebar');
+  
+        const rightButtons = document.getElementById('right-buttons');
+        rightButtons.classList.add('show');
+        rightButtons.classList.remove('hide');
+  
+        toggleShowBarButton();
+      }
+  
+      function hideSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.remove('show');
+        const mainContent = document.querySelector('.main-content');
+        mainContent.classList.remove('with-sidebar');
+  
+        const rightButtons = document.getElementById('right-buttons');
+        rightButtons.classList.remove('show');
+        rightButtons.classList.add('hide');
+  
+        toggleShowBarButton();
+      }
+  
+      function toggleShowBarButton() {
+        const showBarButton = document.getElementById('show-bar-btn');
+        const rightButtons = document.getElementById('right-buttons');
+        if (rightButtons.classList.contains('show')) {
+          showBarButton.classList.add('hidden');
+        } else {
+          showBarButton.classList.remove('hidden');
+        }
+      }
+  
+      // Event listener for the "x" key
+      document.addEventListener('keydown', function(event) {
+        if (event.altKey && event.key.toLowerCase() === 'x' || event.altKey && event.key.toUpperCase() === 'X' ) {
+          const currentTime = Date.now();
+  
+          // Check if the time between presses is short enough to count as a double press
+          if (currentTime - lastPressTime < 300) {
+            // If pressed twice quickly, go back to the previous page
+            window.history.back();
+          } else {
+            // If not, navigate to time_passes.html
+            window.location.href = 'Cool_Things/time/time_passes.html';
+          }
+  
+          // Update the last press time
+          lastPressTime = currentTime;
+        }
+      });
+  
+      // Event listener for the "z" key
+      document.addEventListener('keydown', function(event) {
+        if (event.altKey && event.key.toLowerCase() === 'z' || event.altKey && event.key.toUpperCase() === 'Z' ) {
+          const currentTime = Date.now();
+  
+          // Check if the time between presses is short enough to count as a double press
+          if (currentTime - lastPressTime < 300) {
+            // If pressed twice quickly, go back to the previous page
+            window.history.back();
+          } else {
+            // If not, navigate to time_passes.html
+            window.location.href = 'Cool_Things/HTML_Extractor/Extractor.html';
+          }
+  
+          // Update the last press time
+          lastPressTime = currentTime;
+        }
+      });
+  
+      document.addEventListener('keydown', function(event) {
+    if (event.altKey && (event.key.toLowerCase() === 'c' || event.key.toUpperCase() === 'C')) {
+      const currentTime = Date.now();
+      if (currentTime - lastPressTime < 300) {
+        window.history.back(); // Go back in browser history
+      } else {
+        window.location.href = 'Cool_Things/CryptoGraph/CryptoGraph.html'; // Navigate to the specified page
+      }
+      lastPressTime = currentTime; // Update the last press time
+    }
+  });
+      document.addEventListener('keydown', function(event) {
+        if (event.altKey && event.key.toLowerCase() === 'v' || event.altKey && event.key.toUpperCase() === 'V' ) {
+          const currentTime = Date.now();
+  
+          // Check if the time between presses is short enough to count as a double press
+          if (currentTime - lastPressTime < 300) {
+            // If pressed twice quickly, go back to the previous page
+            window.history.back();
+          } else {
+            // If not, navigate to time_passes.html
+            window.location.href = 'Cool_Things/Database/Database.html';
+          }
+  
+          // Update the last press time
+          lastPressTime = currentTime;
+        }
+      });
+  
+  document.addEventListener('keydown', function(event) {
+    if (event.altKey && event.ctrlKey && event.key.toLowerCase() === 'm' || event.altKey && event.key.toUpperCase() === 'M' ) {
+      const currentTime = Date.now();
+  
+          if (currentTime - lastPressTime < 300) {
+              window.history.back();
+          } else {
+              // Open a new tab
+              const newTab = window.open('FiveDollars/index.html', '_blank');
+  
+              if (newTab) {
+                  // Make the new tab go fullscreen
+                  newTab.onload = function() {
+                      newTab.document.documentElement.requestFullscreen();
+                  };
+              }
+          }
+  
+          lastPressTime = currentTime;
+      }
+  });
+
+  document.addEventListener('keydown', function(event) {
+    if (event.altKey && event.ctrlKey && event.key.toLowerCase() === '0') {
+      const currentTime = Date.now();
+  
+          if (currentTime - lastPressTime < 300) {
+              window.history.back();
+          } else {
+              // Open a new tab
+              const newTab = window.open('Cool_Things/SIGnOUT/index.html', '_blank');
+  
+              if (newTab) {
+                  // Make the new tab go fullscreen
+                  newTab.onload = function() {
+                      newTab.document.documentElement.requestFullscreen();
+                  };
+              }
+          }
+  
+          lastPressTime = currentTime;
+      }
+  });
+
+  document.addEventListener('keydown', function(event) {
+    if (event.altKey && event.ctrlKey && event.key.toLowerCase() === 'i') {
+      const currentTime = Date.now();
+  
+          if (currentTime - lastPressTime < 300) {
+              window.history.back();
+          } else {
+              // Open a new tab
+              window.location.href = 'Cool_Things/Control/main-control.html';  
+              if (newTab) {
+                  // Make the new tab go fullscreen
+                  newTab.onload = function() {
+                      newTab.document.documentElement.requestFullscreen();
+                  };
+              }
+          }
+  
+          lastPressTime = currentTime;
+      }
+  });
+
+  // Flag to prevent form submission
+  let isFormSubmitted = false;
+
+// Function to allow hitting Enter multiple times without blocking submission
+function submitOnce(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();  // Prevent the default form submission behavior
+        
+        const searchQuery = event.target.value;
+        if (searchQuery.trim() !== "") {
+            saveSearchHistory(searchQuery);  // Save the search history
+            searchOnGoogle(searchQuery);    // Perform Google search
+        }
+    }
+}
+
+// Function to save the search history in localStorage and update the display
+function saveSearchHistory(searchQuery) {
+    let history = JSON.parse(localStorage.getItem('searchHistory')) || [];
+    if (!history.includes(searchQuery)) {
+        history.push(searchQuery);  // Add the new search term to the history array
+        if (history.length > 5) {  // Keep only the last 5 searches
+            history.shift();
+        }
+        localStorage.setItem('searchHistory', JSON.stringify(history));  // Save to localStorage
+        displaySearchHistory(history);  // Update the displayed history
+    }
+}
+
+// Function to display search history below the search bar
+function displaySearchHistory(history) {
+    const historyContainer = document.getElementById('history');
+    historyContainer.innerHTML = "";  // Clear previous history
+
+    history.forEach(function(query, index) {
+        const historyItem = document.createElement('div');
+        historyItem.classList.add('history-item');
+
+        const historyText = document.createElement('span');
+        historyText.textContent = query;
+        historyItem.appendChild(historyText);
+
+        // Create a delete button ('X') for each history item
+        const deleteButton = document.createElement('span');
+        deleteButton.textContent = 'X';
+        deleteButton.classList.add('delete-btn');
+        deleteButton.onclick = function(event) {
+            event.stopPropagation();  // Prevent triggering search when X is clicked
+            deleteHistoryItem(index);  // Delete the clicked history item
+        };
+
+        historyItem.appendChild(deleteButton);
+        historyContainer.appendChild(historyItem);
+
+        // Add click event to search for the clicked history item
+        historyItem.onclick = function() {
+            searchOnGoogle(query);
+        };
+    });
+}
+
+// Function to delete a history item
+function deleteHistoryItem(index) {
+    let history = JSON.parse(localStorage.getItem('searchHistory')) || [];
+    history.splice(index, 1);  // Remove the item at the specified index
+    localStorage.setItem('searchHistory', JSON.stringify(history));  // Save the updated history
+    displaySearchHistory(history);  // Update the displayed history
+}
+
+// Function to perform Google search
+function searchOnGoogle(query) {
+    const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    window.open(googleSearchUrl, '_blank');
+}
+
+// Load and display history from localStorage on page load
+window.onload = function() {
+    const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
+    displaySearchHistory(history);
+};
+
+// Add event listener for keydown event to handle Ctrl + I
+document.addEventListener('keydown', function(event) {
+    if (event.ctrlKey && event.key.toLowerCase() === 'y') {
+        const searchBar = document.querySelector('.search-bar');
+        const overlay = document.querySelector('.overlay');
+        const searchInput = document.querySelector('.search-bar input');
+        const historyContainer = document.getElementById('history');
+
+        if (searchBar.style.top === '20px') {
+            // Move search bar up, fade out the overlay, and fade out history simultaneously
+            searchBar.style.top = '-100px';
+            overlay.style.opacity = '0';
+            historyContainer.style.opacity = '0'; // Fade out history immediately
+            setTimeout(() => { historyContainer.style.display = 'none'; }, 500); // Hide history after fade-out
+        } else {
+            // Move search bar down, fade in the overlay, and show history
+            searchBar.style.top = '20px';
+            overlay.style.opacity = '1';
+            historyContainer.style.display = 'block'; // Show history
+            setTimeout(() => { historyContainer.style.opacity = '1'; }, 10); // Fade in history immediately
+            searchInput.focus(); // Focus the input automatically
+        }
+    }
+});
+  </script>  
+</body>
+</html>

@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Access Terminal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --primary-color: #00ffd5;
+            --secondary-color: #ff005b;
+            --tertiary-color: #001eff;
+            --background-dark: #0a0a14;
+            --glass-bg: rgba(23, 25, 35, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --neu-shadow-dark: rgba(0, 0, 0, 0.5);
+            --neu-shadow-light: rgba(255, 255, 255, 0.08);
+            --font-main: 'Orbitron', sans-serif;
+            --font-mono: 'Share Tech Mono', monospace;
+            --glow-intensity: 0.8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: var(--background-dark);
+            color: var(--primary-color);
+            font-family: var(--font-main);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+            /* Enhanced background with particle effect */
+            body::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(circle at 20% 30%, rgba(0, 255, 213, 0.05) 0%, transparent 25%), radial-gradient(circle at 80% 70%, rgba(255, 0, 91, 0.05) 0%, transparent 25%), radial-gradient(circle at 40% 60%, rgba(0, 30, 255, 0.05) 0%, transparent 25%);
+                z-index: -1;
+                animation: particleMove 20s infinite alternate;
+            }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            perspective: 1000px;
+            background: radial-gradient(ellipse at bottom, #1a1a2e 0%, #0a0a14 100%);
+            overflow: hidden;
+        }
+
+        /* Enhanced header with more glitch effects */
+        header {
+            position: relative;
+            padding: 30px 0;
+            z-index: 10;
+            width: 100%;
+            text-align: center;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .glitch-title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 900;
+            letter-spacing: 4px;
+            position: relative;
+            animation: textShadow 1.6s infinite;
+            text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color), 0 0 30px var(--primary-color);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+            .glitch-title::before,
+            .glitch-title::after {
+                content: "ERROR: ACCESS DENIED";
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                opacity: 0.8;
+                animation: glitch 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite both;
+            }
+
+            .glitch-title::before {
+                color: var(--secondary-color);
+                clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+                transform: translate(-4px, -2px);
+            }
+
+            .glitch-title::after {
+                color: var(--tertiary-color);
+                clip-path: polygon(0 60%, 100% 60%, 100% 100%, 0 100%);
+                transform: translate(4px, 2px);
+            }
+
+        /* Enhanced main container */
+        main {
+            display: flex;
+            flex: 1;
+            padding: 0 20px 40px;
+            perspective: 1000px;
+            z-index: 5;
+            position: relative;
+            margin: -20px auto;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Supercharged keypad container */
+        .keypad-container {
+            width: min(420px, 90%);
+            padding: 40px;
+            border-radius: 25px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 45px var(--neu-shadow-dark), inset 0 2px 2px var(--neu-shadow-light), 0 0 30px rgba(0, 255, 213, 0.3);
+            transform-style: preserve-3d;
+            animation: floatKeypad 6s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+            .keypad-container::before {
+                content: "";
+                position: absolute;
+                top: -150px;
+                left: -150px;
+                width: 300px;
+                height: 300px;
+                background: radial-gradient(circle, rgba(0, 255, 213, 0.15) 0%, transparent 70%);
+                opacity: var(--glow-intensity);
+                animation: moveGlow 18s infinite alternate;
+                z-index: -1;
+            }
+
+            .keypad-container::after {
+                content: "";
+                position: absolute;
+                bottom: -100px;
+                right: -100px;
+                width: 200px;
+                height: 200px;
+                background: radial-gradient(circle, rgba(255, 0, 91, 0.1) 0%, transparent 70%);
+                opacity: calc(var(--glow-intensity) - 0.3);
+                animation: moveGlow 15s infinite alternate-reverse;
+                z-index: -1;
+            }
+
+        /* Enhanced PIN display */
+        .pin-display {
+            margin-bottom: 40px;
+            height: 80px;
+            background: rgba(10, 12, 18, 0.9);
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.7), 0 2px 2px rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0, 255, 213, 0.1);
+        }
+
+            .pin-display::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient( 90deg, transparent, rgba(0, 255, 213, 0.1), transparent );
+                animation: scanline 3s linear infinite;
+            }
+
+        .pin-dots {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+        }
+
+        .pin-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.7), 0 0 5px rgba(0, 255, 213, 0.3);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            position: relative;
+        }
+
+            .pin-dot.active {
+                background: var(--primary-color);
+                box-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
+                animation: pulseDot 1.5s infinite;
+                transform: scale(1.1);
+            }
+
+                .pin-dot.active::after {
+                    content: "";
+                    position: absolute;
+                    top: -5px;
+                    left: -5px;
+                    right: -5px;
+                    bottom: -5px;
+                    border-radius: 50%;
+                    border: 1px solid var(--primary-color);
+                    animation: ripple 1.5s infinite;
+                }
+
+        /* Enhanced keypad grid */
+        .keypad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 20px;
+            perspective: 1000px;
+            grid-template-columns: repeat(3, minmax(80px, 1fr)); /* Adjusted column sizing */
+        }
+
+        .key {
+            height: clamp(60px, 12vh, 80px);
+            border-radius: 18px;
+            font-family: var(--font-main);
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            background: linear-gradient(145deg, #15152a, #1a1a33);
+            border: none;
+            box-shadow: 6px 6px 12px var(--neu-shadow-dark), -6px -6px 12px var(--neu-shadow-light), 0 0 0 rgba(0, 255, 213, 0);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.2, 0.85, 0.45, 1.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform-style: preserve-3d;
+        }
+
+            .key::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient( 135deg, rgba(0, 255, 213, 0.1) 0%, transparent 70% );
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                pointer-events: none;
+            }
+
+            .key::after {
+                content: "";
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 5px;
+                height: 5px;
+                background: rgba(255, 255, 255, 0.5);
+                border-radius: 50%;
+                transform: translate(-50%, -50%) scale(0);
+                transition: transform 0.3s ease;
+            }
+
+            .key:hover {
+                transform: translateY(-5px) rotateX(10deg);
+                box-shadow: 8px 8px 15px var(--neu-shadow-dark), -8px -8px 15px var(--neu-shadow-light), 0 0 15px rgba(0, 255, 213, 0.3);
+            }
+
+                .key:hover::before {
+                    opacity: 1;
+                }
+
+            .key:active {
+                transform: translateY(2px) rotateX(5deg);
+                box-shadow: 3px 3px 8px var(--neu-shadow-dark), -3px -3px 8px var(--neu-shadow-light), 0 0 20px rgba(0, 255, 213, 0.5);
+                background: linear-gradient(145deg, #14142a, #191932);
+            }
+
+                .key:active::after {
+                    transform: translate(-50%, -50%) scale(20);
+                    opacity: 0;
+                }
+
+            .key.clicked {
+                animation: keyPress 0.4s forwards;
+            }
+
+        /* DELETE BUTTON ENHANCEMENTS */
+        .key-delete {
+            color: white !important;
+            background: linear-gradient(145deg, #ff0000, #cc0000) !important;
+            border: 1px solid rgba(255, 0, 0, 0.5) !important;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5) !important;
+        }
+
+            .key-delete::before {
+                content: "DEL";
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white !important;
+            }
+
+            .key-delete:hover {
+                transform: translateY(-5px) rotateX(10deg) scale(1.05);
+                box-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 0 40px rgba(255, 0, 0, 0.5) !important;
+                background: linear-gradient(145deg, #ff3333, #cc0000) !important;
+            }
+
+            .key-delete:active {
+                transform: translateY(2px) rotateX(5deg);
+                box-shadow: 0 0 30px rgba(255, 0, 0, 1), inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+                background: linear-gradient(145deg, #cc0000, #990000) !important;
+            }
+
+        /* UNLOCK BUTTON ENHANCEMENTS */
+        .key-unlock {
+            color: white !important;
+            background: linear-gradient(145deg, #00cc00, #009900) !important;
+            border: 1px solid rgba(0, 255, 0, 0.5) !important;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5) !important;
+            width: 120px; /* Adjusted width */
+            height: 70px; /* Adjusted height */
+            margin: 0 auto; /* Center the button */
+        }
+
+            .key-unlock::before {
+                content: "YES";
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white !important;
+                font-size: 1.8rem; /* Adjusted font size */
+            }
+
+            .key-unlock:hover {
+                transform: translateY(-5px) rotateX(10deg) scale(1.05);
+                box-shadow: 0 0 20px rgba(0, 255, 0, 0.8), 0 0 40px rgba(0, 255, 0, 0.5) !important;
+                background: linear-gradient(145deg, #00ff00, #00cc00) !important;
+            }
+
+            .key-unlock:active {
+                transform: translateY(2px) rotateX(5deg);
+                box-shadow: 0 0 30px rgba(0, 255, 0, 1), inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+                background: linear-gradient(145deg, #009900, #006600) !important;
+            }
+
+        /* Active state animations */
+        .unlock-activated {
+            animation: unlockSuccess 0.8s forwards;
+            background: linear-gradient(145deg, #00ff00, #00cc00) !important;
+            color: white !important;
+        }
+
+        .delete-activated {
+            animation: deletePulse 0.5s forwards;
+            background: linear-gradient(145deg, #ff0000, #cc0000) !important;
+            color: white !important;
+        }
+
+        @keyframes unlockSuccess {
+            0% {
+                box-shadow: 0 0 0 rgba(0, 255, 0, 0);
+            }
+
+            50% {
+                box-shadow: 0 0 50px rgba(0, 255, 0, 0.8);
+            }
+
+            100% {
+                box-shadow: 0 0 0 rgba(0, 255, 0, 0);
+            }
+        }
+
+        @keyframes deletePulse {
+            0% {
+                box-shadow: 0 0 0 rgba(255, 0, 0, 0);
+            }
+
+            50% {
+                box-shadow: 0 0 50px rgba(255, 0, 0, 0.8);
+            }
+
+            100% {
+                box-shadow: 0 0 0 rgba(255, 0, 0, 0);
+            }
+        }
+
+        /* Add these classes via JavaScript when buttons are clicked */
+        .unlock-activated {
+            animation: unlockSuccess 0.8s forwards;
+            background: linear-gradient(145deg, #0f0, #0a2a0a) !important;
+            color: #000 !important;
+        }
+
+        .delete-activated {
+            animation: deletePulse 0.5s forwards;
+            background: linear-gradient(145deg, #ff005b, #2a0a1a) !important;
+            color: #fff !important;
+        }
+
+        /* Enhanced overlay effects */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.7) 100%);
+            pointer-events: none;
+            z-index: 2;
+            mix-blend-mode: multiply;
+        }
+
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient( to bottom, transparent 0%, rgba(255, 255, 255, 0.03) 0.5%, transparent 1% );
+            background-size: 100% 8px;
+            pointer-events: none;
+            z-index: 3;
+            animation: scanlines 1s steps(60) infinite;
+            opacity: 0.3;
+        }
+
+        .glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 30%, rgba(0, 255, 213, 0.15), transparent 70%), radial-gradient(circle at 70% 70%, rgba(255, 0, 91, 0.1), transparent 70%);
+            pointer-events: none;
+            z-index: 1;
+            animation: pulseGlow 8s ease-in-out infinite alternate;
+        }
+
+        /* Digital noise effect */
+        .noise {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABOSURBVGhDY/j//z8DqampDB8/fmT4//8/A1JgZGQkCkfVg9Xz8eNHBmZmZgZGRkYGJEFqGqoerJ6PHz8yMDMzQz2CJEhNQ9WD1fPx40cGZmZmqEeQBKlpqHqwej5+/MjAzMwM9QiSIDUNVQ9Wz8ePHxmYmZmhHkESpKah6sHq+fjxIwMzMzPUI0iC1DRUPVg9Hz9+ZGBmZoZ6BEmQmoaqB6vn48ePDMzMzFCPIAkCAJ3xY6x0Qx9RAAAAAElFTkSuQmCC');
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 4;
+            animation: noise 0.2s infinite;
+        }
+
+        /* ====================== */
+        /* ANIMATIONS             */
+        /* ====================== */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        @keyframes floatKeypad {
+            0%, 100% {
+                transform: translateY(0) rotateX(5deg) rotateY(1deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotateX(2deg) rotateY(-1deg);
+            }
+        }
+
+        @keyframes pulseDot {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.7;
+                transform: scale(0.9);
+            }
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        @keyframes scanline {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% {
+                opacity: 0.3;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes moveGlow {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            25% {
+                transform: translate(300px, 150px);
+            }
+
+            50% {
+                transform: translate(150px, 300px);
+            }
+
+            75% {
+                transform: translate(350px, 50px);
+            }
+
+            100% {
+                transform: translate(50px, 250px);
+            }
+        }
+
+        @keyframes particleMove {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(50px, 50px);
+            }
+        }
+
+        @keyframes noise {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 100% 100%;
+            }
+        }
+
+        @keyframes keyPress {
+            0% {
+                transform: scale(1) rotateX(0);
+            }
+
+            50% {
+                transform: scale(0.92) rotateX(10deg);
+                box-shadow: 0 0 0 var(--neu-shadow-dark), 0 0 0 var(--neu-shadow-light), 0 0 30px rgba(0, 255, 213, 0.8);
+            }
+
+            100% {
+                transform: scale(1) rotateX(0);
+            }
+        }
+
+        @keyframes glitch {
+            0% {
+                transform: translate(0);
+            }
+            .
+            20% {
+                transform: translate(-5px, 5px);
+            }
+
+            40% {
+                transform: translate(-5px, -5px);
+            }
+
+            60% {
+                transform: translate(5px, 5px);
+            }
+
+            80% {
+                transform: translate(5px, -5px);
+            }
+
+            100% {
+                transform: translate(0);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .keypad-container {
+                padding: 30px;
+            }
+
+            .key {
+                height: clamp(50px, 10vh, 70px);
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .keypad-container {
+                padding: 20px;
+                width: 95%;
+            }
+
+            .pin-dots {
+                gap: 15px;
+            }
+
+            .key {
+                height: clamp(45px, 8vh, 60px);
+                font-size: 1.6rem;
+            }
+
+            .glitch-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <main>
+            <div class="keypad-container">
+                <div class="pin-display">
+                    <div class="pin-dots">
+                        <span class="pin-dot"></span>
+                        <span class="pin-dot"></span>
+                        <span class="pin-dot"></span>
+                        <span class="pin-dot"></span>
+                    </div>
+                </div>
+                <div class="keypad-grid">
+                    <button class="key" data-key="1">1</button>
+                    <button class="key" data-key="2">2</button>
+                    <button class="key" data-key="3">3</button>
+                    <button class="key" data-key="4">4</button>
+                    <button class="key" data-key="5">5</button>
+                    <button class="key" data-key="6">6</button>
+                    <button class="key" data-key="7">7</button>
+                    <button class="key" data-key="8">8</button>
+                    <button class="key" data-key="9">9</button>
+                    <button class="key key-delete" data-key="delete">DEL</button>
+                    <button class="key" data-key="0">0</button>
+                    <button class="key key-unlock" data-key="unlock">YES</button>
+                </div>
+            </div>
+        </main>
+
+        <div class="overlay"></div>
+        <div class="scanlines"></div>
+        <div class="glow"></div>
+    </div>
+
+    <script>
+        const PIN_LENGTH = 4;
+        const MAX_ATTEMPTS = 5;
+        const CORRECT_PIN = "1234"; // Fixed code is 1234
+
+        const pinDots = document.querySelectorAll('.pin-dot');
+        const keys = document.querySelectorAll('.key');
+        const container = document.querySelector('.container');
+
+        let currentPin = '';
+        let attemptsRemaining = MAX_ATTEMPTS;
+        let isLocked = false;
+
+        function init() {
+            addEventListeners();
+            animateElements();
+        }
+
+        function addEventListeners() {
+            keys.forEach(key => {
+                key.addEventListener('click', () => handleKeyPress(key));
+
+                key.addEventListener('mouseenter', () => {
+                    playSound('hover');
+                });
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') {
+                    toggleBackgroundAudio();
+                }
+            });
+        }
+
+        function handleKeyPress(key) {
+            if (isLocked) return;
+
+            key.classList.add('clicked');
+            setTimeout(() => key.classList.remove('clicked'), 300);
+
+            playSound('keypress');
+
+            const keyValue = key.getAttribute('data-key');
+
+            switch (keyValue) {
+                case 'delete':
+                    deleteLastDigit();
+                    break;
+                case 'unlock':
+                    attemptUnlock();
+                    break;
+                default:
+                    if (currentPin.length < PIN_LENGTH) {
+                        addDigit(keyValue);
+                    }
+            }
+        }
+
+        function addDigit(digit) {
+            if (currentPin.length < PIN_LENGTH) {
+                currentPin += digit;
+                updatePinDisplay();
+
+                if (currentPin.length === PIN_LENGTH) {
+                    setTimeout(attemptUnlock, 500);
+                }
+            }
+        }
+
+        function deleteLastDigit() {
+            if (currentPin.length > 0) {
+                currentPin = currentPin.slice(0, -1);
+                updatePinDisplay();
+            }
+        }
+
+        function updatePinDisplay() {
+            pinDots.forEach((dot, index) => {
+                if (index < currentPin.length) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+
+        function attemptUnlock() {
+            if (currentPin.length !== PIN_LENGTH) {
+                shakeEffect('.pin-display');
+                playSound('error');
+                return;
+            }
+
+            attemptsRemaining--;
+
+            const isCorrect = checkPin(currentPin);
+
+            if (isCorrect) {
+                handleSuccessfulUnlock();
+            } else {
+                handleFailedAttempt();
+            }
+
+            currentPin = '';
+            updatePinDisplay();
+        }
+
+        function checkPin(pin) {
+            return pin === CORRECT_PIN;
+        }
+
+        function handleSuccessfulUnlock() {
+            playSound('success');
+            container.classList.add('access-granted');
+            // Redirect to index.html after a brief delay
+            setTimeout(() => {
+                window.location.href = "index.html";
+            }, 500);
+        }
+
+        function handleFailedAttempt() {
+            playSound('error');
+            shakeEffect('.keypad-container');
+
+            if (attemptsRemaining <= 0) {
+                setTimeout(lockSystem, 500);
+            }
+        }
+
+        function lockSystem() {
+            isLocked = true;
+            playSound('lockdown');
+            shakeEffect('.keypad-container', 10);
+            container.classList.add('system-locked');
+        }
+
+        function shakeEffect(selector, intensity = 5) {
+            const element = document.querySelector(selector);
+            element.style.animation = `shake 0.5s cubic-bezier(.36,.07,.19,.97) both`;
+            element.style.transform = `translate3d(0, 0, 0)`;
+
+            const keyframes = `
+                    @keyframes shake {
+                        10%, 90% { transform: translate3d(${-intensity}px, 0, 0); }
+                        20%, 80% { transform: translate3d(${intensity * 2}px, 0, 0); }
+                        30%, 50%, 70% { transform: translate3d(${-intensity * 2}px, 0, 0); }
+                        40%, 60% { transform: translate3d(${intensity * 2}px, 0, 0); }
+                    }
+                `;
+
+            let style = document.getElementById('shake-style');
+            if (!style) {
+                style = document.createElement('style');
+                style.id = 'shake-style';
+                document.head.appendChild(style);
+            }
+
+            style.innerHTML = keyframes;
+
+            setTimeout(() => {
+                element.style.animation = '';
+            }, 500);
+        }
+
+        function playSound(type) {
+            if (!window.audioContext) {
+                window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            const context = window.audioContext;
+
+            const oscillator = context.createOscillator();
+            const gain = context.createGain();
+
+            oscillator.connect(gain);
+            gain.connect(context.destination);
+
+            switch (type) {
+                case 'keypress':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(880, context.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(440, context.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.2, context.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.1);
+                    oscillator.start(context.currentTime);
+                    oscillator.stop(context.currentTime + 0.1);
+                    break;
+
+                case 'error':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(300, context.currentTime);
+                    oscillator.frequency.setValueAtTime(280, context.currentTime + 0.1);
+                    oscillator.frequency.setValueAtTime(260, context.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.3, context.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.3);
+                    oscillator.start(context.currentTime);
+                    oscillator.stop(context.currentTime + 0.3);
+                    break;
+
+                case 'success':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(440, context.currentTime);
+                    oscillator.frequency.setValueAtTime(554, context.currentTime + 0.1);
+                    oscillator.frequency.setValueAtTime(659, context.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.3, context.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.3);
+                    oscillator.start(context.currentTime);
+                    oscillator.stop(context.currentTime + 0.3);
+                    break;
+
+                case 'lockdown':
+                    oscillator.type = 'triangle';
+                    oscillator.frequency.setValueAtTime(180, context.currentTime);
+                    oscillator.frequency.setValueAtTime(150, context.currentTime + 0.1);
+                    oscillator.frequency.setValueAtTime(120, context.currentTime + 0.2);
+                    oscillator.frequency.setValueAtTime(100, context.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.4, context.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.4);
+                    oscillator.start(context.currentTime);
+                    oscillator.stop(context.currentTime + 0.4);
+                    break;
+
+                case 'hover':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(1760, context.currentTime);
+                    gain.gain.setValueAtTime(0.05, context.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.05);
+                    oscillator.start(context.currentTime);
+                    oscillator.stop(context.currentTime + 0.05);
+                    break;
+
+                case 'reset':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(659, context.currentTime);
+                    oscillator.frequency.setValueAtTime(554, context.currentTime + 0.1);
+                    oscillator.frequency.setValueAtTime(440, context.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.2, context.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.3);
+                    oscillator.start(context.currentTime);
+                    oscillator.stop(context.currentTime + 0.3);
+                    break;
+            }
+        }
+
+        let backgroundAudio = null;
+
+        function createBackgroundAudio() {
+            if (!window.audioContext) {
+                window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            const context = window.audioContext;
+
+            const bufferSize = 2 * context.sampleRate;
+            const noiseBuffer = context.createBuffer(1, bufferSize, context.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+
+            const noise = context.createBufferSource();
+            noise.buffer = noiseBuffer;
+            noise.loop = true;
+
+            const filter = context.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 400;
+
+            const gain = context.createGain();
+            gain.gain.value = 0.03;
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(context.destination);
+
+            noise.start(0);
+
+            return {
+                noise,
+                gain,
+                filter,
+                isPlaying: true
+            };
+        }
+
+        function toggleBackgroundAudio() {
+            if (!backgroundAudio) {
+                backgroundAudio = createBackgroundAudio();
+            } else {
+                if (backgroundAudio.isPlaying) {
+                    backgroundAudio.gain.gain.value = 0;
+                    backgroundAudio.isPlaying = false;
+                } else {
+                    backgroundAudio.gain.gain.value = 0.03;
+                    backgroundAudio.isPlaying = true;
+                }
+            }
+        }
+
+        function animateElements() {
+            const glow = document.querySelector('.glow');
+            setInterval(() => {
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                glow.style.background = `radial-gradient(circle at ${x}% ${y}%, rgba(0, 255, 213, 0.1), transparent 70%)`;
+            }, 3000);
+
+            document.addEventListener('click', () => {
+                if (!backgroundAudio) {
+                    backgroundAudio = createBackgroundAudio();
+                }
+            }, { once: true });
+        }
+
+        init();
+    </script>
+</body>
+</html>
