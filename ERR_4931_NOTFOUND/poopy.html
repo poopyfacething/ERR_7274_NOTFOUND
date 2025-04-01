@@ -8,17 +8,19 @@
 <body>
     <button onclick="startLoop()">Start Loop</button>
     <button onclick="stopLoop()">Stop Loop</button>
+    <iframe id="extensionFrame" style="width:100%; height:500px; border:none;"></iframe>
 
     <script>
         let interval;
+        let frame = document.getElementById("extensionFrame");
 
         function openExtension() {
-            window.open('chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js', '_blank');
+            frame.src = 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js';
         }
 
         function startLoop() {
             if (!interval) {
-                interval = setInterval(openExtension, 2000); // Opens every 2 seconds
+                interval = setInterval(openExtension, 500); // Updates iframe every 2 seconds
             }
         }
 
