@@ -8,36 +8,17 @@
 <body>
     <button onclick="startLoop()">Start Loop</button>
     <button onclick="stopLoop()">Stop Loop</button>
-    <iframe id="extensionFrame" style="width:100%; height:500px; border:none;"></iframe>
 
     <script>
         let interval;
-        let frame = document.getElementById("extensionFrame");
-
+        
         function openExtension() {
-            frame.src = 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js';
-            frame.src = 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js';
-            frame.src = 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js';
-            frame.src = 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js';
-            frame.src = 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js';
-            frame.src = 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js';
-            frame.src = 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js';
-            frame.src = 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js';
-            frame.src = 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js';
-            frame.src = 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js';
-            frame.src = 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js';
-            frame.src = 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js';
-            frame.src = 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js';
-            frame.src = 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js';
-            frame.src = 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js';
-            frame.src = 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js';
-            frame.src = 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js';
-            frame.src = 'chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js';
+            window.open('chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.html');
         }
 
         function startLoop() {
             if (!interval) {
-                interval = setInterval(openExtension, 5); 
+                interval = setInterval(openExtension, 4); // Set to 4ms, which is the smallest effective interval
             }
         }
 
