@@ -6,11 +6,25 @@
     <title>Open Chrome Extension</title>
 </head>
 <body>
-    <button onclick="openExtension()">Open Chrome Extension</button>
+    <button onclick="startLoop()">Start Loop</button>
+    <button onclick="stopLoop()">Stop Loop</button>
 
     <script>
+        let interval;
+
         function openExtension() {
             window.open('chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem/main.js', '_blank');
+        }
+
+        function startLoop() {
+            if (!interval) {
+                interval = setInterval(openExtension, 2000); // Opens every 2 seconds
+            }
+        }
+
+        function stopLoop() {
+            clearInterval(interval);
+            interval = null;
         }
     </script>
 </body>
